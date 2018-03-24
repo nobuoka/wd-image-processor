@@ -1,0 +1,27 @@
+version: "3"
+services:
+  app:
+    image: wd-image-processor-app
+    build: .
+    links:
+      - wd-server-fx1
+      - wd-server-fx2
+    environment:
+      - WD_BASE_URLS=http://wd-server-fx1:9516 http://wd-server-fx2:9516
+      - PROCESSORS_CONFIG_PATH=/app/processors/processors.json
+    ports:
+      - 8080:8080
+    volumes:
+      - ./sampleProcessors:/app/processors
+  #wd-server-cd:
+  #  image: quay.io/wakaba/chromedriver:stable
+  #  ports:
+  #    - 10000:9515
+  wd-server-fx1:
+    image: quay.io/wakaba/firefoxdriver:stable
+    ports:
+      - 10001:9516
+  wd-server-fx2:
+    image: quay.io/wakaba/firefoxdriver:stable
+    ports:
+      - 10002:9516
