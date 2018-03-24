@@ -1,0 +1,6 @@
+FROM openjdk:8-windowsservercore-ltsc2016
+
+COPY .\\build\\install\\wdip C:\\wdip
+
+ENTRYPOINT ["cmd", "/c"]
+CMD ["C:\\wdip\\bin\\wdip"]

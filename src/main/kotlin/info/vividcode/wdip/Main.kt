@@ -1,3 +1,5 @@
+@file:JvmName("Main")
+
 package info.vividcode.wdip
 
 import com.beust.klaxon.JsonObject
@@ -5,6 +7,7 @@ import com.beust.klaxon.Klaxon
 import info.vividcode.wd.*
 import info.vividcode.wd.http.implementation.OkHttpWebDriverCommandExecutor
 import info.vividcode.wd.http.implementation.OkHttpWebDriverCommandHttpRequestDispatcher
+import info.vividcode.wdip.jmx.TerminatorHandler
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import java.nio.charset.StandardCharsets
@@ -20,6 +23,7 @@ import io.ktor.pipeline.PipelineInterceptor
 import io.ktor.response.respond
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.netty.NettyApplicationEngine
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.newFixedThreadPoolContext
 import java.nio.file.Files
@@ -29,6 +33,8 @@ import javax.imageio.ImageIO
 import java.io.*
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.BlockingQueue
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.experimental.CoroutineContext
 
 class ByteArrayContent(override val contentType: ContentType, private val bytes: ByteArray) : OutgoingContent.ByteArrayContent() {
@@ -45,6 +51,10 @@ fun verifySignature(path: String, queryParameters: Parameters, key: String): Boo
 }
 
 fun main(args: Array<String>) {
+    start()
+}
+
+fun start() {
     val spaceSeparatedWebDriverBaseUrls = System.getenv("WD_BASE_URLS") ?: "http://localhost:10001"
     val webDriverBaseUrls = spaceSeparatedWebDriverBaseUrls.split(Regex("\\s"))
     val processorsConfigJsonPath = System.getenv("PROCESSORS_CONFIG_PATH") ?: "./sampleProcessors/processors.json"
@@ -59,6 +69,11 @@ fun main(args: Array<String>) {
         it.path to createWdImageProcessingPipelineInterceptor(WdImageProcessingExecutor(it.html, it.js, wdSessionManager), it.key)
     }.toMap()
 
+    val serverReference = AtomicReference<NettyApplicationEngine?>(null)
+    val shutdownHookThread = Thread(Runnable {
+        serverReference.get()?.stop(2000, 15000, TimeUnit.MILLISECONDS)
+    })
+
     val server = embeddedServer(Netty, 8080) {
         intercept(ApplicationCallPipeline.Call) {
             try {
@@ -68,6 +83,11 @@ fun main(args: Array<String>) {
                 throw e
             }
         }
+        routing {
+            get("/") {
+                call.respond("OK!!!")
+            }
+        }
 
         routing {
             functionMap.map { function ->
@@ -75,6 +95,9 @@ fun main(args: Array<String>) {
             }
         }
     }
+    serverReference.set(server)
+
+    Runtime.getRuntime().addShutdownHook(shutdownHookThread)
     server.start(wait = true)
 }
 

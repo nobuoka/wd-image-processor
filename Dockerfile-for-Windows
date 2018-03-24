@@ -1,6 +1,0 @@
-FROM openjdk:8
-
-ADD ./build/install/wd-image-processor /app
-
-ENV PATH $PATH:/app/bin
-CMD ["app"]

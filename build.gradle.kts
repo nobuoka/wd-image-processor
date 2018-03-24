@@ -4,14 +4,15 @@ import java.net.URI
 
 plugins {
     application
-    kotlin("jvm") version "1.2.30"
+    kotlin("jvm") version "1.2.31"
 }
 
 group = "info.vividcode.example"
 version = "1.0-SNAPSHOT"
 
 application {
-    mainClassName = "info.vividcode.sample.wdip.MainKt"
+    applicationName = "wdip"
+    mainClassName = "info.vividcode.wdip.Main"
 }
 
 repositories {
