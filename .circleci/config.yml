@@ -50,12 +50,14 @@ jobs:
           background: true
           command: |
             set +e
-            docker run -it --rm --volumes-from wdip-cfg --env PROCESSORS_CONFIG_PATH=/cfg/sampleProcessors/processors.json --name wdip-test app
+            docker run -it --rm --volumes-from wdip-cfg --network=host --env PROCESSORS_CONFIG_PATH=/cfg/sampleProcessors/processors.json --name wdip-test app
             s=$?
             # Java application terminated by signal returns exit code 143
             if [ $s -eq 0 -o $s -eq 143 ]; then exit 0; else exit $s; fi
       - run:
-          command: echo 'ここでいろいろやる' && sleep 5 && exit 1
+          command: |
+            docker build -t wdip-system-test systemTest
+            docker run -it --rm --network=host -e TEST_BASE_URL=http://localhost:8080 wdip-system-test
       - run:
           when: always
           command: docker stop wdip-test

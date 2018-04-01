@@ -7,7 +7,6 @@ import com.beust.klaxon.Klaxon
 import info.vividcode.wd.*
 import info.vividcode.wd.http.implementation.OkHttpWebDriverCommandExecutor
 import info.vividcode.wd.http.implementation.OkHttpWebDriverCommandHttpRequestDispatcher
-import info.vividcode.wdip.jmx.TerminatorHandler
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import java.nio.charset.StandardCharsets
@@ -84,14 +83,12 @@ fun start() {
             }
         }
         routing {
-            get("/") {
-                call.respond("OK!!!")
+            getAndHead("/-/health") {
+                call.respond("OK")
             }
-        }
 
-        routing {
             functionMap.map { function ->
-                get(function.key, function.value)
+                getAndHead(function.key, function.value)
             }
         }
     }
@@ -235,3 +232,8 @@ fun <T : OutputStream> cropImage(imageInputStream: InputStream, screenshotRect: 
 
 fun createHtmlDataUrl(html: String) =
         "data:text/html;charset=utf-8;base64,${Base64.getEncoder().encodeToString(html.toByteArray(StandardCharsets.UTF_8))}"
+
+fun Route.getAndHead(path: String, body: PipelineInterceptor<Unit, ApplicationCall>) {
+    get(path, body)
+    head(path, body)
+}
