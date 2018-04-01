@@ -49,6 +49,7 @@ jobs:
       - run:
           background: true
           command: |
+            set +e
             docker run -it --rm --volumes-from wdip-cfg --env PROCESSORS_CONFIG_PATH=/cfg/sampleProcessors/processors.json --name wdip-test app
             s=$?
             # Java application terminated by signal returns exit code 143
