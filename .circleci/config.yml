@@ -28,7 +28,7 @@ jobs:
           paths:
             - build
 
-  build-app-docker-image:
+  build-and-push-app-docker-image:
     docker:
       - image: docker:git
     steps:
@@ -65,11 +65,19 @@ jobs:
           when: always
           command: docker stop wdip-cfg
 
+      - run:
+          name: Push Docker image
+          command: |
+            set -x
+            sh +x -c 'echo $QUAY_TOKEN' | docker login -u=$QUAY_USERNAME --password-stdin quay.io
+            docker tag app quay.io/nobuoka/wdip-app
+            docker push quay.io/nobuoka/wdip-app
+
 workflows:
   version: 2
   build:
     jobs:
       - build-app-distribution
-      - build-app-docker-image:
+      - build-and-push-app-docker-image:
           requires:
             - build-app-distribution
