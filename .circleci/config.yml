@@ -79,5 +79,6 @@ workflows:
     jobs:
       - build-app-distribution
       - build-and-push-app-docker-image:
+          context: org-global
           requires:
             - build-app-distribution
