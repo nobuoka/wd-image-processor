@@ -1,6 +1,8 @@
 WebDriver を用いた画像処理サーバー
 ==========
 
+* AWS ECS でのデモについては [demo](./demo/README.markdown) を参照。
+
 ## サンプルの動かし方
 
 ```

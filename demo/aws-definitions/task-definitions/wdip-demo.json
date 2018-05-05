@@ -1,0 +1,36 @@
+[
+  {
+    "name": "wdip-demo-app",
+    "image": "quay.io/nobuoka/wdip-app-demo:latest",
+    "portMappings": [
+      {
+        "containerPort": 8080
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "${region}",
+        "awslogs-stream-prefix": "wdip-demo"
+      }
+    }
+  },
+  {
+    "name": "wdip-demo-wd",
+    "image": "quay.io/wakaba/firefoxdriver:stable",
+    "portMappings": [
+      {
+        "containerPort": 9516
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "${region}",
+        "awslogs-stream-prefix": "wdip-demo"
+      }
+    }
+  }
+]
