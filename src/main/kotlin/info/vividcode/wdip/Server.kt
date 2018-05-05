@@ -28,6 +28,9 @@ fun startServer() {
 
     val okHttpClient = OkHttpClient.Builder()
         .addNetworkInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
+        .connectTimeout(20, TimeUnit.SECONDS)
+        .readTimeout(20, TimeUnit.SECONDS)
+        .writeTimeout(20, TimeUnit.SECONDS)
         .build()
     val wdSessionManager = WebDriverSessionManager(okHttpClient, webDriverBaseUrls)
 
