@@ -1,6 +1,8 @@
 WebDriver を用いた画像処理サーバー
 ==========
 
+[![CircleCI](https://circleci.com/gh/nobuoka/wd-image-processor.svg?style=svg)](https://circleci.com/gh/nobuoka/wd-image-processor)
+
 * AWS ECS でのデモについては [demo](./demo/README.markdown) を参照。
 
 ## サンプルの動かし方
