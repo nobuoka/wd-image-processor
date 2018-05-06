@@ -13,7 +13,7 @@ buildscript {
 
 plugins {
     application
-    kotlin("jvm") version "1.2.31"
+    kotlin("jvm") version "1.2.41"
 }
 apply { plugin("org.junit.platform.gradle.plugin") }
 
@@ -33,7 +33,7 @@ repositories {
 
 dependencies {
     val okHttpVersion = "3.9.1"
-    val ktorVersion = "0.9.1"
+    val ktorVersion = "0.9.2"
     val junitJupiterVersion = "5.1.0"
 
     implementation(kotlin("stdlib-jdk8"))
