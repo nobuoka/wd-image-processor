@@ -51,6 +51,10 @@ jobs:
           command: |
             docker run -it --rm --network=host --name wd-firefox quay.io/wakaba/firefoxdriver:stable
       - run:
+          name: Wait for WebDriver remote end (Firefox)
+          command: |
+            sleep 10
+      - run:
           background: true
           command: |
             set +e
