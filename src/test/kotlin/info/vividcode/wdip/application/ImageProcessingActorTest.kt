@@ -10,7 +10,7 @@ internal class ImageProcessingActorTest {
     @Test
     fun test() {
         runBlocking {
-            val queue = ImageProcessingRequestQueue<String, String>()
+            val queue = RequestQueue<String, String>()
             val actors = listOf(
                 ImageProcessingActor(),
                 ImageProcessingActor(),

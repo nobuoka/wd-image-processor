@@ -1,17 +1,16 @@
 package info.vividcode.wdip
 
+import info.vividcode.wdip.ktor.SignatureVerifyingInterceptor
+import info.vividcode.wdip.ktor.WdImageProcessingInterceptor
+import info.vividcode.wdip.ktor.getAndHead
+import info.vividcode.wdip.ktor.routeGetAndHead
 import io.ktor.application.ApplicationCall
 import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
-import io.ktor.content.OutgoingContent
-import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.pipeline.PipelineInterceptor
 import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.routing.get
-import io.ktor.routing.head
-import io.ktor.routing.routing
+import io.ktor.routing.*
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
@@ -32,11 +31,20 @@ fun startServer() {
         .readTimeout(20, TimeUnit.SECONDS)
         .writeTimeout(20, TimeUnit.SECONDS)
         .build()
-    val wdSessionManager = WebDriverSessionManager(okHttpClient, webDriverBaseUrls)
+    val wdSessionManager = WebDriverConnectionManager(okHttpClient, webDriverBaseUrls)
 
-    val settings = parseProcessorsConfigJson(Paths.get(processorsConfigJsonPath))
-    val imageProcessorPathAndInterceptorPairs = settings.map {
-        it.path to createWdImageProcessingPipelineInterceptor(WdImageProcessingExecutor(it.html, it.js, wdSessionManager), it.key)
+    val wdImageProcessingEndpoints = run {
+        val settings = parseProcessorsConfigJson(Paths.get(processorsConfigJsonPath))
+        settings.map {
+            WdImageProcessingEndpoint(it.path, listOfNotNull(
+                it.key?.let(::SignatureVerifyingInterceptor),
+                WdImageProcessingInterceptor(
+                    WdImageProcessingExecutor(wdSessionManager),
+                    it.html,
+                    it.js
+                )
+            ).map { it.toPipelineInterceptor() })
+        }
     }
 
     val serverReference = AtomicReference<NettyApplicationEngine?>(null)
@@ -53,13 +61,23 @@ fun startServer() {
                 throw e
             }
         }
+
         routing {
             getAndHead("/-/health") {
-                call.respond("OK")
+                val result = wdSessionManager.checkAllWebDriverRemoteEndsAvailable()
+                val healthCount = result.count { it }
+                val countString = "(WebDriver remote ends: $healthCount / ${result.size})"
+                if (healthCount == result.size) {
+                    call.respond("OK $countString")
+                } else {
+                    call.respond(HttpStatusCode.ServiceUnavailable, "NG $countString")
+                }
             }
 
-            imageProcessorPathAndInterceptorPairs.map { pathAndInterceptorPair ->
-                getAndHead(pathAndInterceptorPair.first, pathAndInterceptorPair.second)
+            wdImageProcessingEndpoints.forEach { endpoint ->
+                routeGetAndHead(endpoint.path) {
+                    endpoint.interceptors.forEach(::handle)
+                }
             }
         }
     }
@@ -69,31 +87,7 @@ fun startServer() {
     server.start(wait = true)
 }
 
-private class ByteArrayContent(
-    override val contentType: ContentType,
-    private val bytes: ByteArray
-) : OutgoingContent.ByteArrayContent() {
-    override fun bytes(): ByteArray = bytes
-}
-
-private fun Route.getAndHead(path: String, body: PipelineInterceptor<Unit, ApplicationCall>) {
-    get(path, body)
-    head(path, body)
-}
-
-private fun createWdImageProcessingPipelineInterceptor(
-    wdImageProcessingExecutor: WdImageProcessingExecutor,
-    key: String?
-): PipelineInterceptor<Unit, ApplicationCall> = lambda@{
-    val argParameter = call.request.queryParameters["arg"]
-    val signatureParameter = call.request.queryParameters["signature"]
-    if (key != null) {
-        val expectedSignature = Signatures.makeSignatureWithHmacSha1(key, argParameter ?: "")
-        if (expectedSignature != signatureParameter) {
-            call.respond(HttpStatusCode.BadRequest, "Bad Signature")
-            return@lambda
-        }
-    }
-    val arg = argParameter ?: "null"
-    call.respond(ByteArrayContent(ContentType.Image.PNG, wdImageProcessingExecutor.execute(arg)))
-}
+private class WdImageProcessingEndpoint(
+    val path: String,
+    val interceptors: List<PipelineInterceptor<Unit, ApplicationCall>>
+)

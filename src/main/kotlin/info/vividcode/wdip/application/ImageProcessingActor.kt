@@ -10,7 +10,7 @@ class ImageProcessingActor() {
 
     private val cancelRequested = AtomicBoolean(false)
 
-    fun start(queue: ImageProcessingRequestQueue<String, String>): Unit = synchronized(this) {
+    fun start(queue: RequestQueue<String, String>): Unit = synchronized(this) {
         if (job != null) {
             throw IllegalStateException("Already Started")
         }

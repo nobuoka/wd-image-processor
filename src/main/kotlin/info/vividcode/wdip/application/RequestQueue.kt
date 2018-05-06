@@ -4,7 +4,7 @@ import kotlinx.coroutines.experimental.CompletableDeferred
 import kotlinx.coroutines.experimental.channels.Channel
 import java.util.concurrent.atomic.AtomicInteger
 
-class ImageProcessingRequestQueue<T, R> {
+class RequestQueue<T, R> {
 
     private val count = AtomicInteger(0)
 

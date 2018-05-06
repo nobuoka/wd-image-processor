@@ -44,8 +44,8 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
 
     // JUnit Jupiter API and TestEngine implementation
-    testCompile("org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}")
-    testRuntime("org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}")
+    testCompile("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
+    testRuntime("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 }
 
 tasks.withType<KotlinCompile> {

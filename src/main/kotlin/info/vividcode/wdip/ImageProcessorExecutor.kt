@@ -54,7 +54,7 @@ fun WebDriverCommandExecutor.executeImageProcessorWithCroppedScreenshot(
     return cropImage(ByteArrayInputStream(screenshotImage), screenshotRect, ByteArrayOutputStream()).toByteArray()
 }
 
-private fun parseScriptResponse(obj: JsonObject?) =
+fun parseScriptResponse(obj: JsonObject?) =
     ImageProcessorScriptResponse(
         targetElement = (obj?.get("targetElement") as? JsonObject)?.let(WebElement.Companion::from)
     )
@@ -67,7 +67,7 @@ private fun <T : OutputStream> cropImage(imageInputStream: InputStream, screensh
         if (!ok) throw RuntimeException("No appropriate writer is found for ImageIO")
     }
 
-private fun createHtmlDataUrl(html: String) =
+fun createHtmlDataUrl(html: String) =
     "data:text/html;charset=utf-8;base64,${Base64.getEncoder().encodeToString(html.toByteArray(StandardCharsets.UTF_8))}"
 
 private val screenshotRectDefaultValue = ScreenshotRect(0, 0, 360, 360)
