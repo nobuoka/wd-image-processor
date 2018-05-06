@@ -1,27 +1,3 @@
-# 参考にした : https://github.com/yukkyun/terraform-ecs-sample
-
-variable "aws_access_key" {}
-variable "aws_secret_key" {}
-variable "aws_region" {}
-variable "vpc_cidr" {
-  description = "CIDR for the whole VPC"
-  default = "10.0.0.0/16"
-}
-variable "public_subnet_cidr" {
-  description = "CIDR for the Public Subnet"
-  default = "10.0.0.0/24"
-}
-
-provider "aws" {
-  version = "~> 1.17"
-  access_key = "${var.aws_access_key}"
-  secret_key = "${var.aws_secret_key}"
-  region = "${var.aws_region}"
-}
-provider "template" {
-  version = "~> 1.0"
-}
-
 resource "aws_cloudwatch_log_group" "wdip_demo" {
   name = "/ecs/wdip-demo"
   retention_in_days = 1
@@ -76,39 +52,4 @@ resource "aws_ecs_task_definition" "wdip_demo" {
   # awslogs-group	/ecs/wdip-demo
   # awslogs-region	us-east-1
   # awslogs-stream-prefix	ecs
-}
-
-resource "aws_vpc" "wdip_demo" {
-  cidr_block = "${var.vpc_cidr}"
-  enable_dns_hostnames = true
-  tags {
-    Name = "wdip-demo-vpc"
-  }
-}
-
-resource "aws_internet_gateway" "default" {
-  vpc_id = "${aws_vpc.wdip_demo.id}"
-}
-
-resource "aws_subnet" "public_subnet" {
-  vpc_id = "${aws_vpc.wdip_demo.id}"
-  cidr_block = "${var.public_subnet_cidr}"
-  #availability_zone = "eu-west-1a"
-  tags {
-    Name = "Public Subnet for wdip-demo"
-  }
-}
-resource "aws_route_table" "public_subnet" {
-  vpc_id = "${aws_vpc.wdip_demo.id}"
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = "${aws_internet_gateway.default.id}"
-  }
-  tags {
-    Name = "Public Subnet for wdip-demo"
-  }
-}
-resource "aws_route_table_association" "public_subnet" {
-  subnet_id = "${aws_subnet.public_subnet.id}"
-  route_table_id = "${aws_route_table.public_subnet.id}"
 }
