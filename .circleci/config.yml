@@ -49,8 +49,15 @@ jobs:
       - run:
           background: true
           command: |
+            docker run -it --rm --network=host --name wd-firefox quay.io/wakaba/firefoxdriver:stable
+      - run:
+          background: true
+          command: |
             set +e
-            docker run -it --rm --volumes-from wdip-cfg --network=host --env PROCESSORS_CONFIG_PATH=/cfg/sampleProcessors/processors.json --name wdip-test app
+            docker run -it --rm --volumes-from wdip-cfg --network=host \
+              --env PROCESSORS_CONFIG_PATH=/cfg/sampleProcessors/processors.json \
+              --env WD_BASE_URLS=http://localhost:9516 \
+              --name wdip-test app
             s=$?
             # Java application terminated by signal returns exit code 143
             if [ $s -eq 0 -o $s -eq 143 ]; then exit 0; else exit $s; fi
@@ -61,6 +68,9 @@ jobs:
       - run:
           when: always
           command: docker stop wdip-test
+      - run:
+          when: always
+          command: docker stop wd-firefox
       - run:
           when: always
           command: docker stop wdip-cfg
