@@ -47,6 +47,9 @@ jobs:
           docker run -it -d --rm -v /cfg --name wdip-cfg alpine:3.4 /bin/sh
           docker cp sampleProcessors wdip-cfg:/cfg
       - run:
+          command: |
+            docker pull quay.io/wakaba/firefoxdriver:stable
+      - run:
           background: true
           command: |
             docker run -it --rm --network=host --name wd-firefox quay.io/wakaba/firefoxdriver:stable
