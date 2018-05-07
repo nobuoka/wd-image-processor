@@ -4,7 +4,9 @@
     "image": "quay.io/nobuoka/wdip-app-demo:latest",
     "portMappings": [
       {
-        "containerPort": 8080
+        "protocol": "tcp",
+        "containerPort": 8080,
+        "hostPort": 8080
       }
     ],
     "logConfiguration": {
@@ -28,7 +30,9 @@
     "image": "quay.io/wakaba/firefoxdriver:stable",
     "portMappings": [
       {
-        "containerPort": 9516
+        "protocol": "tcp",
+        "containerPort": 9516,
+        "hostPort": 9516
       }
     ],
     "logConfiguration": {
@@ -38,13 +42,6 @@
         "awslogs-region": "${region}",
         "awslogs-stream-prefix": "wdip-demo"
       }
-    },
-    "healthCheck": {
-      "command": [ "CMD-SHELL", "curl -f 'http://localhost:8080/-/health/wd?url=http://127.0.0.1:9516' || exit 1" ],
-      "interval": 30,
-      "retries": 4,
-      "startPeriod": 30,
-      "timeout": 20
     }
   }
 ]

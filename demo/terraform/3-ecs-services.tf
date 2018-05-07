@@ -42,6 +42,14 @@ resource "aws_security_group" "wdip_app" {
     protocol = "tcp"
     from_port = 8080
     to_port = 8080
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    protocol = "-1"
+    from_port = 0
+    to_port = 0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -61,5 +69,6 @@ resource "aws_ecs_service" "wdip_demo" {
     security_groups = [
       "${aws_security_group.wdip_app.id}"
     ]
+    assign_public_ip = true
   }
 }
