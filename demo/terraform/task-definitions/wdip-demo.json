@@ -14,6 +14,13 @@
         "awslogs-region": "${region}",
         "awslogs-stream-prefix": "wdip-demo"
       }
+    },
+    "healthCheck": {
+      "command": [ "CMD-SHELL", "curl -f 'http://localhost:8080/-/health/all' || exit 1" ],
+      "interval": 30,
+      "retries": 8,
+      "startPeriod": 60,
+      "timeout": 20
     }
   },
   {
@@ -31,6 +38,13 @@
         "awslogs-region": "${region}",
         "awslogs-stream-prefix": "wdip-demo"
       }
+    },
+    "healthCheck": {
+      "command": [ "CMD-SHELL", "curl -f 'http://localhost:8080/-/health/wd?url=http://127.0.0.1:9516' || exit 1" ],
+      "interval": 30,
+      "retries": 4,
+      "startPeriod": 30,
+      "timeout": 20
     }
   }
 ]

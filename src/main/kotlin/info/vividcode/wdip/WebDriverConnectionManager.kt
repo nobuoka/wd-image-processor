@@ -11,7 +11,7 @@ import kotlin.coroutines.experimental.CoroutineContext
 
 class WebDriverConnectionManager(okHttpClient: OkHttpClient, webDriverBaseUrls: Collection<String>) {
 
-    private val wdRemoteEndManagingActors: Set<WdRemoteEndManagingActor>
+    private val wdRemoteEndManagingActorMap: Map<String, WdRemoteEndManagingActor>
 
     private val webDriverManagerContext: CoroutineContext = newSingleThreadContext("WebDriverManagerContext")
     private val webDriverExecutionContext: CoroutineContext =
@@ -20,33 +20,54 @@ class WebDriverConnectionManager(okHttpClient: OkHttpClient, webDriverBaseUrls: 
     private val sessionRequestChannel = Channel<CompletableDeferred<WdSessionInfo>>(100)
 
     init {
-        val wdCommandExecutors = webDriverBaseUrls
-            .map { OkHttpWebDriverCommandHttpRequestDispatcher(okHttpClient, it) }
-            .map { OkHttpWebDriverCommandExecutor(it) }
-        wdRemoteEndManagingActors = wdCommandExecutors
-            .map { WdRemoteEnd(it, webDriverExecutionContext) }
-            .map { WdRemoteEndManagingActor(sessionRequestChannel, it) }.toSet()
-        wdRemoteEndManagingActors.forEach { it.start(webDriverManagerContext) }
+        wdRemoteEndManagingActorMap = webDriverBaseUrls.map { webDriverBaseUrl ->
+            webDriverBaseUrl to
+                    WdRemoteEndManagingActor(
+                        sessionRequestChannel,
+                        WdRemoteEnd(
+                            OkHttpWebDriverCommandExecutor(
+                                OkHttpWebDriverCommandHttpRequestDispatcher(okHttpClient, webDriverBaseUrl)
+                            ),
+                            webDriverExecutionContext
+                        )
+                    )
+        }.toMap()
+        wdRemoteEndManagingActorMap.values.forEach { it.start(webDriverManagerContext) }
     }
 
     suspend fun checkAllWebDriverRemoteEndsAvailable(): List<Boolean> =
-        wdRemoteEndManagingActors.map {
+        wdRemoteEndManagingActorMap.values.map {
             async(webDriverManagerContext) { it.checkWebDriverRemoteEndAvailable() }
         }.map {
-            it.await()
+            try {
+                it.await()
+            } catch (rawException: Exception) {
+                val e = RuntimeException(rawException)
+                e.printStackTrace()
+                false
+            }
         }
+
+    suspend fun checkWebDriverRemoteEndAvailable(url: String): Boolean? {
+        val v = wdRemoteEndManagingActorMap[url] ?: return null
+        val r = async(webDriverManagerContext) { v.checkWebDriverRemoteEndAvailable() }
+        return try {
+            r.await()
+        } catch (rawException: Exception) {
+            val e = RuntimeException(rawException)
+            e.printStackTrace()
+            false
+        }
+    }
 
     suspend fun <T> withSession(block: WebDriverCommandExecutor.(session: WebDriverSession) -> T): T =
         withContext(webDriverManagerContext) {
             val sessionDeferred = CompletableDeferred<WdSessionInfo>()
             sessionRequestChannel.send(sessionDeferred)
-            val sessionInfo = sessionDeferred.await()
-            try {
+            sessionDeferred.await().use { sessionInfo ->
                 async(webDriverExecutionContext) {
                     block(sessionInfo.correspondingWdRemoteEnd.webDriverCommandExecutor, sessionInfo.session)
                 }.await()
-            } finally {
-                sessionInfo.finishUse()
             }
         }
 
@@ -74,15 +95,13 @@ class WebDriverConnectionManager(okHttpClient: OkHttpClient, webDriverBaseUrls: 
                         select {
                             healthCheckRequestChannel.onReceive { request ->
                                 try {
-                                    val sessionInfo = wdRemoteEnd.publishSession()
-                                    val result = try {
+                                    val result = wdRemoteEnd.publishSession().use { sessionInfo ->
                                         withContext(sessionInfo.correspondingWdRemoteEnd.webDriverExecutionContext) {
                                             WebDriverHealthChecker.checkAvailability(
                                                 sessionInfo.correspondingWdRemoteEnd.webDriverCommandExecutor,
-                                                sessionInfo.session)
+                                                sessionInfo.session
+                                            )
                                         }
-                                    } finally {
-                                        sessionInfo.finishUse()
                                     }
                                     request.complete(result)
                                 } catch (e: Exception) {
@@ -156,20 +175,20 @@ class WebDriverConnectionManager(okHttpClient: OkHttpClient, webDriverBaseUrls: 
             return session
         }
 
-        suspend fun returnSession(sessionInfo: WdSessionInfo) {
+        suspend fun returnSession(sessionInfo: WdSessionInfo, forceRelease: Boolean = false) {
             val removed = sessionsInUse.remove(sessionInfo)
             if (!removed) {
                 throw RuntimeException("Unknown session")
             }
 
-            if (sessionInfo.numUsed < maxNumSessionUsed) {
-                sessionsIdle.add(sessionInfo)
-            } else {
+            if (sessionInfo.numUsed >= maxNumSessionUsed  || forceRelease) {
                 async(webDriverExecutionContext) {
                     with(webDriverCommandExecutor) {
                         WebDriverCommand.DeleteSession(sessionInfo.session).execute()
                     }
                 }.await()
+            } else {
+                sessionsIdle.add(sessionInfo)
             }
 
             onSessionReturnedEventCallbacks.forEach { it.complete(Unit) }
@@ -184,9 +203,25 @@ class WebDriverConnectionManager(okHttpClient: OkHttpClient, webDriverBaseUrls: 
         var numUsed: Int = 0
             private set(value) { field = value }
 
-        suspend fun finishUse() {
-            numUsed++
-            correspondingWdRemoteEnd.returnSession(this)
+        suspend fun <T> use(block: suspend (WdSessionInfo) -> T): T {
+            var errorOccurred = false
+            try {
+                return block(this)
+            } catch (e: Exception) {
+                errorOccurred = true
+                throw e
+            } finally {
+                finishUse(errorOccurred)
+            }
+        }
+
+        suspend fun finishUse(errorOccurred: Boolean) {
+            try {
+                numUsed++
+                correspondingWdRemoteEnd.returnSession(this, errorOccurred)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 

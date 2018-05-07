@@ -63,7 +63,10 @@ fun startServer() {
         }
 
         routing {
-            getAndHead("/-/health") {
+            getAndHead("/-/health/app-only") {
+                call.respond("OK")
+            }
+            getAndHead("/-/health/all") {
                 val result = wdSessionManager.checkAllWebDriverRemoteEndsAvailable()
                 val healthCount = result.count { it }
                 val countString = "(WebDriver remote ends: $healthCount / ${result.size})"
@@ -71,6 +74,16 @@ fun startServer() {
                     call.respond("OK $countString")
                 } else {
                     call.respond(HttpStatusCode.ServiceUnavailable, "NG $countString")
+                }
+            }
+            getAndHead("/-/health/wd") {
+                val argUrl = call.request.queryParameters["url"]
+                val result = argUrl?.let { wdSessionManager.checkWebDriverRemoteEndAvailable(it) }
+                val message = "(WebDriver remote end: $argUrl)"
+                if (result == true) {
+                    call.respond("OK $message")
+                } else {
+                    call.respond(HttpStatusCode.ServiceUnavailable, "NG $message")
                 }
             }
 
