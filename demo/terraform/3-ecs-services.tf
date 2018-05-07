@@ -59,7 +59,7 @@ resource "aws_ecs_service" "wdip_demo" {
   network_configuration {
     subnets = ["${aws_subnet.public_subnet.*.id}"]
     security_groups = [
-      "${aws_security_group.wdip_app}"
+      "${aws_security_group.wdip_app.id}"
     ]
   }
 }
