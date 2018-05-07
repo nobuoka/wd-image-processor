@@ -103,7 +103,7 @@ jobs:
           version: 17.11.0-ce
       - run:
           name: Build Docker image
-          command: docker build -t demo demo
+          command: docker build -t demo demo/image
       - run:
           name: Push Docker image
           command: |
