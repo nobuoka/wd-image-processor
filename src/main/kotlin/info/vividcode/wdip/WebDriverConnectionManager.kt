@@ -80,7 +80,7 @@ class WebDriverConnectionManager(okHttpClient: OkHttpClient, webDriverBaseUrls: 
 
         /** Must be run on managerContext. */
         suspend fun checkWebDriverRemoteEndAvailable(): Boolean =
-            if (job == null) {
+            if (job?.isActive != true) {
                 false
             } else {
                 val resultDeferred = CompletableDeferred<Boolean>()
