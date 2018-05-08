@@ -71,4 +71,9 @@ resource "aws_ecs_service" "wdip_demo" {
     ]
     assign_public_ip = true
   }
+
+  # Optional: Allow external changes without Terraform plan difference
+  lifecycle {
+    ignore_changes = ["desired_count"]
+  }
 }
