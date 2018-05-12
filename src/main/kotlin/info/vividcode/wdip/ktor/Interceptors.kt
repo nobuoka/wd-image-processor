@@ -8,6 +8,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.pipeline.PipelineContext
 import io.ktor.pipeline.PipelineInterceptor
+import io.ktor.response.header
 import io.ktor.response.respond
 
 interface PipelineInterceptorBase {
@@ -23,6 +24,7 @@ class SignatureVerifyingInterceptor(private val key: String) : PipelineIntercept
         val expectedSignature = Signatures.makeSignatureWithHmacSha1(key, argParameter ?: "")
         if (expectedSignature != signatureParameter) {
             call.respond(HttpStatusCode.BadRequest, "Bad Signature")
+            finish()
         } else {
             proceed()
         }
@@ -37,11 +39,15 @@ class WdImageProcessingInterceptor(
     override suspend fun PipelineContext<Unit, ApplicationCall>.intercept() {
         val argParameter = call.request.queryParameters["arg"]
         val arg = argParameter ?: "null"
-        call.respond(
-            ByteArrayContent(
-                ContentType.Image.PNG,
-                wdImageProcessingExecutor.execute(html, js, arg)
-            )
-        )
+
+        val result = wdImageProcessingExecutor.execute(html, js, arg)
+
+        result.httpCache?.let { httpCache ->
+            httpCache.maxAge?.let { call.response.header("Cache-Control", "public, max-age=$it") }
+        }
+        val imageBytes = result.imageBytes
+        call.respond(HttpStatusCode.fromValue(result.statusCode),
+            imageBytes?.let { ByteArrayContent(ContentType.Image.PNG, it) }
+                    ?: ByteArrayContent(ContentType.Application.OctetStream, ByteArray(0)))
     }
 }

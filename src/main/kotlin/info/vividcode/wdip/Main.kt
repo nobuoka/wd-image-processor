@@ -32,7 +32,7 @@ fun parseProcessorsConfigJson(jsonFile: Path): List<ProcessorSetting> {
 class WdImageProcessingExecutor(
     private val webDriverConnectionManager: WebDriverConnectionManager
 ) {
-    suspend fun execute(htmlString: String, jsString: String, jsArg: String): ByteArray =
+    suspend fun execute(htmlString: String, jsString: String, jsArg: String): WdImageProcessingResult =
         webDriverConnectionManager.withSession { session ->
             executeImageProcessorWithElementScreenshot(session, htmlString, jsString, jsArg)
         }
@@ -46,5 +46,11 @@ data class ScreenshotRect(
 )
 
 data class ImageProcessorScriptResponse(
-    val targetElement: WebElement?
+    val targetElement: WebElement?,
+    val statusCode: Int,
+    val httpCache: HttpCache?
+)
+
+data class HttpCache(
+    val maxAge: Int?
 )

@@ -10,9 +10,11 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.imageio.ImageIO
 
+class WdImageProcessingResult(val statusCode: Int, val imageBytes: ByteArray?, val httpCache: HttpCache?)
+
 fun WebDriverCommandExecutor.executeImageProcessorWithElementScreenshot(
     session: WebDriverSession, htmlString: String, jsString: String, jsArg: String
-): ByteArray {
+): WdImageProcessingResult {
     WebDriverCommand.Go(session, createHtmlDataUrl(htmlString)).execute()
     val rawExecuteResult = WebDriverCommand.ExecuteAsyncScript(session,
         Script(jsString, listOf(jsArg))
@@ -22,8 +24,11 @@ fun WebDriverCommandExecutor.executeImageProcessorWithElementScreenshot(
 
     val element =
         executeResult.targetElement ?:
-        WebDriverCommand.FindElement(session, ElementSelector(ElementSelector.Strategy.XPATH, "//body")).execute()
-    return WebDriverCommand.TakeElementScreenshot(session, element).execute()
+        if (executeResult.statusCode == 200)
+            WebDriverCommand.FindElement(session, ElementSelector(ElementSelector.Strategy.XPATH, "//body")).execute()
+        else null
+    val screenshot = element?.let { WebDriverCommand.TakeElementScreenshot(session, it).execute() }
+    return WdImageProcessingResult(executeResult.statusCode, screenshot, executeResult.httpCache)
 }
 
 fun WebDriverCommandExecutor.executeImageProcessorWithCroppedScreenshot(
@@ -56,7 +61,11 @@ fun WebDriverCommandExecutor.executeImageProcessorWithCroppedScreenshot(
 
 fun parseScriptResponse(obj: JsonObject?) =
     ImageProcessorScriptResponse(
-        targetElement = (obj?.get("targetElement") as? JsonObject)?.let(WebElement.Companion::from)
+        targetElement = (obj?.get("targetElement") as? JsonObject)?.let(WebElement.Companion::from),
+        statusCode = (obj?.get("statusCode") as? Int) ?: 200,
+        httpCache = (obj?.get("httpCache") as? JsonObject)?.let {
+            HttpCache(it["maxAge"] as? Int)
+        }
     )
 
 private fun <T : OutputStream> cropImage(imageInputStream: InputStream, screenshotRect: ScreenshotRect, imageOutputStream: T): T =

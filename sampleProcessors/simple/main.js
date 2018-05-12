@@ -1,6 +1,11 @@
 var args = JSON.parse(arguments[0]) || {
-  message: "Hello world!",
+    message: "Hello world!",
 };
+
+if (args.message === "error") {
+    return { statusCode: 404 };
+}
+
 for (var i = 0; i < 40; i++) {
     var e = document.createElement("span");
     e.textContent = args.message;
@@ -11,5 +16,8 @@ for (var i = 0; i < 40; i++) {
 }
 
 return {
-  targetElement: document.getElementById("target"),
+    targetElement: document.getElementById("target"),
+    httpCache: {
+        maxAge: 8 * 60 * 60
+    },
 };
