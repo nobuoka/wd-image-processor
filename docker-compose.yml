@@ -8,7 +8,7 @@ services:
       - wd-server-fx2
     environment:
       - WD_BASE_URLS=http://wd-server-fx1:9516 http://wd-server-fx2:9516
-      - PROCESSORS_CONFIG_PATH=/app/processors/processors.json
+      - PROCESSORS_CONFIG_PATH=/app/processors/config.json
     ports:
       - 8080:8080
     volumes:

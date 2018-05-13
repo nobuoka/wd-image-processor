@@ -1,0 +1,9 @@
+{
+  "processors": {
+    "hello": {
+      "html": "./simple/main.html",
+      "js": "./simple/main.js",
+      "key": "sample-key-hello"
+    }
+  }
+}

@@ -9,6 +9,7 @@ import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.pipeline.PipelineInterceptor
+import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.*
 import io.ktor.server.engine.embeddedServer
@@ -33,18 +34,16 @@ fun startServer() {
         .build()
     val wdSessionManager = WebDriverConnectionManager(okHttpClient, webDriverBaseUrls)
 
-    val wdImageProcessingEndpoints = run {
-        val settings = parseProcessorsConfigJson(Paths.get(processorsConfigJsonPath))
-        settings.map {
-            WdImageProcessingEndpoint(it.path, listOfNotNull(
-                it.key?.let(::SignatureVerifyingInterceptor),
-                WdImageProcessingInterceptor(
-                    WdImageProcessingExecutor(wdSessionManager),
-                    it.html,
-                    it.js
-                )
-            ).map { it.toPipelineInterceptor() })
-        }
+    val config = parseProcessorsConfigJson(Paths.get(processorsConfigJsonPath))
+    val wdImageProcessingEndpoints = config.processors.map {
+        WdImageProcessingEndpoint(it.path, listOfNotNull(
+            it.key?.let(::SignatureVerifyingInterceptor),
+            WdImageProcessingInterceptor(
+                WdImageProcessingExecutor(wdSessionManager),
+                it.html,
+                it.js
+            )
+        ).map { it.toPipelineInterceptor() })
     }
 
     val serverReference = AtomicReference<NettyApplicationEngine?>(null)
@@ -59,6 +58,14 @@ fun startServer() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 throw e
+            }
+        }
+
+        intercept(ApplicationCallPipeline.Call) {
+            config.accessControlAllowOrigins.let {
+                if (it.isNotEmpty()) {
+                    call.response.header("Access-Control-Allow-Origin", it.joinToString(", "))
+                }
             }
         }
 

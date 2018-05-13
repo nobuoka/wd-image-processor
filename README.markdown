@@ -28,11 +28,37 @@ docker-compose up
 
 ### 設定ファイル
 
-* app の `PROCESSORS_CONFIG_PATH` 環境変数で、画像処理の設定ファイルを指定する。
-    * サンプル設定ファイルが [sampleProcessors/processors.json](./sampleProcessors/processors.json) にある。
-    * パスをキーとして、HTML ファイルと JS ファイルを値とする JSON オブジェクト。
-    * オプショナルの設定値として `key` がある。 このプロパティを定義しておくと、クエリパラメータとして `signature` を送る必要がある。
-        * `signature` の計算方法は、`arg` の文字列 (URL エンコード前) を data、設定ファイルの `key` を key として HMAC-SHA1 のダイジェストを Base64 エンコードしたものである。
+app の `PROCESSORS_CONFIG_PATH` 環境変数で、画像処理の設定ファイルを指定する。
+サンプル設定ファイルが [sampleProcessors/config.json](./sampleProcessors/config.json) にある。
+
+```javascript
+{
+  // Access-Control-Allow-Origin ヘッダフィールドの値として返される origin の配列。
+  // 省略した場合は Access-Control-Allow-Origin ヘッダフィールドは返されない。
+  "accessControlAllowOrigins": [
+    "http://example.com"
+  ],
+  // 画像処理器のオブジェクト。
+  // プロパティ名がエンドポイントのパスとして使われる。
+  // 値は HTML / JS のファイルのパス (html と js プロパティ) と、シグネチャ計算用の key。
+  // シグネチャ計算用の key は省略可能。 (指定した場合はリクエストのクエリパラメータで signature を送る必要がある。)
+  "processors": {
+    "map": {
+      "html": "./map/map.html",
+      "js": "./map/map.js",
+      "key": "sample-key-map"
+    },
+    "hello": {
+      "html": "./simple/main.html",
+      "js": "./simple/main.js",
+      "key": "sample-key-hello"
+    }
+  }
+}
+```
+
+`signature` の計算方法は、`arg` の文字列 (URL エンコード前) を data、設定ファイルの `key` を key として HMAC-SHA1
+のダイジェストを Base64 エンコードしたものである。
 
 ### JS への入力と JS からの出力
 

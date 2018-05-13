@@ -2,6 +2,7 @@
 
 package info.vividcode.wdip
 
+import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Klaxon
 import info.vividcode.wd.*
@@ -15,18 +16,28 @@ fun main(args: Array<String>) {
     startServer()
 }
 
+data class WdipSetting(
+    val accessControlAllowOrigins: List<String>,
+    val processors: List<ProcessorSetting>
+)
 data class ProcessorSetting(val path: String, val html: String, val js: String, val key: String?)
 
-fun parseProcessorsConfigJson(jsonFile: Path): List<ProcessorSetting> {
+fun parseProcessorsConfigJson(jsonFile: Path): WdipSetting {
     fun Path.readContent(): String = Files.readAllBytes(jsonFile.parent.resolve(this)).toString(StandardCharsets.UTF_8)
 
     val configObject = jsonFile.toFile().reader().use { Klaxon().parseJsonObject(it) }
-    return configObject.entries.map { (path, config) ->
-        val htmlString = (config as? JsonObject)?.string("html")?.let { Paths.get(it).readContent() }
-        val jsString = (config as? JsonObject)?.string("js")?.let { Paths.get(it).readContent() }
-        val key = (config as? JsonObject)?.string("key")
-        ProcessorSetting(path, htmlString ?: "", jsString ?: "", key)
-    }
+    return WdipSetting(
+        accessControlAllowOrigins =
+        (configObject["accessControlAllowOrigins"] as JsonArray<*>?)?.map { it as String } ?: emptyList(),
+        processors =
+        (configObject["processors"] as JsonObject?)?.let {
+            it.entries.map { (path, config) ->
+                val htmlString = (config as? JsonObject)?.string("html")?.let { Paths.get(it).readContent() }
+                val jsString = (config as? JsonObject)?.string("js")?.let { Paths.get(it).readContent() }
+                val key = (config as? JsonObject)?.string("key")
+                ProcessorSetting(path, htmlString ?: "", jsString ?: "", key)
+            }
+        } ?: emptyList())
 }
 
 class WdImageProcessingExecutor(
