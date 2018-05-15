@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference
 fun startServer() {
     val spaceSeparatedWebDriverBaseUrls = System.getenv("WD_BASE_URLS") ?: "http://localhost:10001"
     val webDriverBaseUrls = spaceSeparatedWebDriverBaseUrls.split(Regex("\\s"))
-    val processorsConfigJsonPath = System.getenv("PROCESSORS_CONFIG_PATH") ?: "./sampleProcessors/processors.json"
+    val processorsConfigJsonPath = System.getenv("PROCESSORS_CONFIG_PATH") ?: "./sampleProcessors/config.json"
 
     val okHttpClient = OkHttpClient.Builder()
         .addNetworkInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))

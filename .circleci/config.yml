@@ -62,7 +62,7 @@ jobs:
           command: |
             set +e
             docker run -it --rm --volumes-from wdip-cfg --network=host \
-              --env PROCESSORS_CONFIG_PATH=/cfg/sampleProcessors/processors.json \
+              --env PROCESSORS_CONFIG_PATH=/cfg/sampleProcessors/config.json \
               --env WD_BASE_URLS=http://localhost:9516 \
               --name wdip-test app
             s=$?
