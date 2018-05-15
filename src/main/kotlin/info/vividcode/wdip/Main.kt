@@ -17,7 +17,7 @@ fun main(args: Array<String>) {
 }
 
 data class WdipSetting(
-    val accessControlAllowOrigins: List<String>,
+    val accessControlAllowOrigins: Set<String>,
     val processors: List<ProcessorSetting>
 )
 data class ProcessorSetting(val path: String, val html: String, val js: String, val key: String?)
@@ -28,7 +28,7 @@ fun parseProcessorsConfigJson(jsonFile: Path): WdipSetting {
     val configObject = jsonFile.toFile().reader().use { Klaxon().parseJsonObject(it) }
     return WdipSetting(
         accessControlAllowOrigins =
-        (configObject["accessControlAllowOrigins"] as JsonArray<*>?)?.map { it as String } ?: emptyList(),
+        (configObject["accessControlAllowOrigins"] as JsonArray<*>?)?.map { it as String }?.toSet() ?: emptySet(),
         processors =
         (configObject["processors"] as JsonObject?)?.let {
             it.entries.map { (path, config) ->

@@ -9,6 +9,7 @@ import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.pipeline.PipelineInterceptor
+import io.ktor.request.header
 import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.*
@@ -62,9 +63,9 @@ fun startServer() {
         }
 
         intercept(ApplicationCallPipeline.Call) {
-            config.accessControlAllowOrigins.let {
-                if (it.isNotEmpty()) {
-                    call.response.header("Access-Control-Allow-Origin", it.joinToString(", "))
+            call.request.header("Origin")?.let { origin ->
+                if (config.accessControlAllowOrigins.contains(origin)) {
+                    call.response.header("Access-Control-Allow-Origin", origin)
                 }
             }
         }
