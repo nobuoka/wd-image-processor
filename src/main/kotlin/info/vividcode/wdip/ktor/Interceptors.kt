@@ -45,9 +45,8 @@ class WdImageProcessingInterceptor(
         result.httpCache?.let { httpCache ->
             httpCache.maxAge?.let { call.response.header("Cache-Control", "public, max-age=$it") }
         }
-        val imageBytes = result.imageBytes
+
         call.respond(HttpStatusCode.fromValue(result.statusCode),
-            imageBytes?.let { ByteArrayContent(ContentType.Image.PNG, it) }
-                    ?: ByteArrayContent(ContentType.Application.OctetStream, ByteArray(0)))
+            result.content ?: ByteArrayContent(ContentType.Application.OctetStream, ByteArray(0)))
     }
 }

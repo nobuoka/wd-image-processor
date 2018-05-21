@@ -2,6 +2,11 @@ package info.vividcode.wdip
 
 import com.beust.klaxon.JsonObject
 import info.vividcode.wd.*
+import info.vividcode.wdip.ktor.ByteArrayContent
+import io.ktor.content.OutgoingContent
+import io.ktor.content.TextContent
+import io.ktor.http.ContentType
+import io.ktor.http.withCharset
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -10,7 +15,7 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.imageio.ImageIO
 
-class WdImageProcessingResult(val statusCode: Int, val imageBytes: ByteArray?, val httpCache: HttpCache?)
+class WdImageProcessingResult(val statusCode: Int, val content: OutgoingContent?, val httpCache: HttpCache?)
 
 fun WebDriverCommandExecutor.executeImageProcessorWithElementScreenshot(
     session: WebDriverSession, htmlString: String, jsString: String, jsArg: String
@@ -22,13 +27,20 @@ fun WebDriverCommandExecutor.executeImageProcessorWithElementScreenshot(
 
     val executeResult = parseScriptResponse((rawExecuteResult as? ScriptResult.Object)?.value)
 
-    val element =
-        executeResult.targetElement ?:
-        if (executeResult.statusCode == 200)
-            WebDriverCommand.FindElement(session, ElementSelector(ElementSelector.Strategy.XPATH, "//body")).execute()
-        else null
-    val screenshot = element?.let { WebDriverCommand.TakeElementScreenshot(session, it).execute() }
-    return WdImageProcessingResult(executeResult.statusCode, screenshot, executeResult.httpCache)
+    val content: OutgoingContent? = when (executeResult.content) {
+        is Content.Screenshot -> {
+            val element =
+                executeResult.content.targetElement ?:
+                WebDriverCommand.FindElement(session, ElementSelector(ElementSelector.Strategy.XPATH, "//body")).execute()
+            val screenshot = WebDriverCommand.TakeElementScreenshot(session, element).execute()
+            ByteArrayContent(ContentType.Image.PNG, screenshot)
+        }
+        is Content.Text -> {
+            executeResult.content.value?.let { TextContent(it, ContentType.Text.Plain.withCharset(Charsets.UTF_8)) }
+        }
+    }
+
+    return WdImageProcessingResult(executeResult.statusCode, content, executeResult.httpCache)
 }
 
 fun WebDriverCommandExecutor.executeImageProcessorWithCroppedScreenshot(
@@ -43,13 +55,6 @@ fun WebDriverCommandExecutor.executeImageProcessorWithCroppedScreenshot(
 
     val executeResult = parseScriptResponse((rawExecuteResult as? ScriptResult.Object)?.value)
 
-    val element =
-        executeResult.targetElement ?:
-        WebDriverCommand.FindElement(
-            session,
-            ElementSelector(ElementSelector.Strategy.XPATH, "//body")
-        ).execute()
-
     // TODO : 要素のサイズ取得やスクロール処理をする。
     val screenshotRect = parseScreenshotRect(
         (executeResult as? ScriptResult.Object)?.value?.get("screenshotRect") as? JsonObject,
@@ -61,7 +66,14 @@ fun WebDriverCommandExecutor.executeImageProcessorWithCroppedScreenshot(
 
 fun parseScriptResponse(obj: JsonObject?) =
     ImageProcessorScriptResponse(
-        targetElement = (obj?.get("targetElement") as? JsonObject)?.let(WebElement.Companion::from),
+        content = run {
+            (obj?.get("content") as? JsonObject)?.let { c ->
+                when (c.get("type") as? String) {
+                    "text" -> Content.Text(c["value"] as? String)
+                    else -> Content.Screenshot((c["targetElement"] as? JsonObject)?.let(WebElement.Companion::from))
+                }
+            } ?: Content.Screenshot((obj?.get("targetElement") as? JsonObject)?.let(WebElement.Companion::from))
+        },
         statusCode = (obj?.get("statusCode") as? Int) ?: 200,
         httpCache = (obj?.get("httpCache") as? JsonObject)?.let {
             HttpCache(it["maxAge"] as? Int)

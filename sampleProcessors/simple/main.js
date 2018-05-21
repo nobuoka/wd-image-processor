@@ -16,7 +16,16 @@ for (var i = 0; i < 40; i++) {
 }
 
 return {
-    targetElement: document.getElementById("target"),
+    content: {
+      type: "screenshot",
+      targetElement: document.getElementById("target"),
+
+      // テキストを返したい場合は以下のような感じ。
+      /*
+      type: "text",
+      value: args.message,
+      */
+    },
     httpCache: {
         maxAge: 8 * 60 * 60
     },

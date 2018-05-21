@@ -57,10 +57,15 @@ data class ScreenshotRect(
 )
 
 data class ImageProcessorScriptResponse(
-    val targetElement: WebElement?,
+    val content: Content,
     val statusCode: Int,
     val httpCache: HttpCache?
 )
+
+sealed class Content {
+    data class Screenshot(val targetElement: WebElement?) : Content()
+    data class Text(val value: String?) : Content()
+}
 
 data class HttpCache(
     val maxAge: Int?
