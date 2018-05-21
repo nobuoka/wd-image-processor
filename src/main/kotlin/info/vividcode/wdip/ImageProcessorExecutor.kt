@@ -14,6 +14,8 @@ import java.io.OutputStream
 import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.imageio.ImageIO
+import java.awt.Color
+import java.awt.image.BufferedImage
 
 class WdImageProcessingResult(val statusCode: Int, val content: OutgoingContent?, val httpCache: HttpCache?)
 
@@ -33,7 +35,10 @@ fun WebDriverCommandExecutor.executeImageProcessorWithElementScreenshot(
                 executeResult.content.targetElement ?:
                 WebDriverCommand.FindElement(session, ElementSelector(ElementSelector.Strategy.XPATH, "//body")).execute()
             val screenshot = WebDriverCommand.TakeElementScreenshot(session, element).execute()
-            ByteArrayContent(ContentType.Image.PNG, screenshot)
+            when (executeResult.content.imageType) {
+                Content.Screenshot.ImageType.JPEG -> ByteArrayContent(ContentType.Image.JPEG, convertImageToJpeg(screenshot))
+                Content.Screenshot.ImageType.PNG -> ByteArrayContent(ContentType.Image.PNG, screenshot)
+            }
         }
         is Content.Text -> {
             executeResult.content.value?.let { TextContent(it, ContentType.Text.Plain.withCharset(Charsets.UTF_8)) }
@@ -41,6 +46,21 @@ fun WebDriverCommandExecutor.executeImageProcessorWithElementScreenshot(
     }
 
     return WdImageProcessingResult(executeResult.statusCode, content, executeResult.httpCache)
+}
+
+/**
+ * * See : https://stackoverflow.com/questions/9340569/jpeg-image-with-wrong-colors
+ * * See : https://www.mkyong.com/java/convert-png-to-jpeg-image-file-in-java/
+ */
+fun convertImageToJpeg(image: ByteArray): ByteArray {
+    val bufferedImage = ImageIO.read(ByteArrayInputStream(image)) ?: throw RuntimeException("Converting PNG image to JPEG is failed")
+
+    val rendered = BufferedImage(bufferedImage.width, bufferedImage.height, BufferedImage.TYPE_INT_RGB)
+    rendered.createGraphics().drawImage(bufferedImage, 0, 0, Color.WHITE, null)
+
+    val output = ByteArrayOutputStream()
+    ImageIO.write(rendered, "jpeg", output)
+    return output.toByteArray()
 }
 
 fun WebDriverCommandExecutor.executeImageProcessorWithCroppedScreenshot(
@@ -70,9 +90,15 @@ fun parseScriptResponse(obj: JsonObject?) =
             (obj?.get("content") as? JsonObject)?.let { c ->
                 when (c.get("type") as? String) {
                     "text" -> Content.Text(c["value"] as? String)
-                    else -> Content.Screenshot((c["targetElement"] as? JsonObject)?.let(WebElement.Companion::from))
+                    else -> Content.Screenshot(
+                        (c["targetElement"] as? JsonObject)?.let(WebElement.Companion::from),
+                        if (c["imageType"] == "jpeg") Content.Screenshot.ImageType.JPEG else Content.Screenshot.ImageType.PNG
+                    )
                 }
-            } ?: Content.Screenshot((obj?.get("targetElement") as? JsonObject)?.let(WebElement.Companion::from))
+            } ?:
+            Content.Screenshot(
+                (obj?.get("targetElement") as? JsonObject)?.let(WebElement.Companion::from),
+                Content.Screenshot.ImageType.PNG)
         },
         statusCode = (obj?.get("statusCode") as? Int) ?: 200,
         httpCache = (obj?.get("httpCache") as? JsonObject)?.let {

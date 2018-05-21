@@ -19,6 +19,7 @@ return {
     content: {
       type: "screenshot",
       targetElement: document.getElementById("target"),
+      imageType: "png",
 
       // テキストを返したい場合は以下のような感じ。
       /*

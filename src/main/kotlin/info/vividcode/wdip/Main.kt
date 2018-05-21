@@ -63,7 +63,9 @@ data class ImageProcessorScriptResponse(
 )
 
 sealed class Content {
-    data class Screenshot(val targetElement: WebElement?) : Content()
+    data class Screenshot(val targetElement: WebElement?, val imageType: ImageType) : Content() {
+        enum class ImageType { PNG, JPEG }
+    }
     data class Text(val value: String?) : Content()
 }
 
