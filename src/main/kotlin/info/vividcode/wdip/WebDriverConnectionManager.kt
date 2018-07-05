@@ -9,7 +9,7 @@ import kotlinx.coroutines.experimental.selects.select
 import okhttp3.OkHttpClient
 import kotlin.coroutines.experimental.CoroutineContext
 
-class WebDriverConnectionManager(okHttpClient: OkHttpClient, webDriverBaseUrls: Collection<String>) {
+class WebDriverConnectionManager(okHttpClient: OkHttpClient, webDriverBaseUrls: Collection<String>, webDriverSessionCapacity: Int) {
 
     private val wdRemoteEndManagingActorMap: Map<String, WdRemoteEndManagingActor>
 
@@ -28,7 +28,8 @@ class WebDriverConnectionManager(okHttpClient: OkHttpClient, webDriverBaseUrls: 
                             OkHttpWebDriverCommandExecutor(
                                 OkHttpWebDriverCommandHttpRequestDispatcher(okHttpClient, webDriverBaseUrl)
                             ),
-                            webDriverExecutionContext
+                            webDriverExecutionContext,
+                            maxNumSessionUsed = webDriverSessionCapacity
                         )
                     )
         }.toMap()
