@@ -1,19 +1,20 @@
-WebDriver を用いた画像処理サーバー
+Image processing server (processed by JavaScript on WebDriver remote end)
 ==========
 
 [![CircleCI](https://circleci.com/gh/nobuoka/wd-image-processor.svg?style=svg)](https://circleci.com/gh/nobuoka/wd-image-processor)
 
 * AWS ECS でのデモについては [demo](./demo/README.markdown) を参照。
 
-## サンプルの動かし方
+## The way to run sample image processors on localhost
+
+First, build application and run services by execute following commands.
 
 ```
-docker-compose up
+./gradlew installDist
+docker-compose up --build
 ```
 
-で起動するはず。 Windows でしか試していないのでもしかしたらうまくいかないかも。
-
-起動したら下記 URL にアクセスすると画像が表示される。
+Then, visiting following URLs, you will see the processed images.
 
 * http://localhost:8080/hello?arg={%22message%22:%20%22%E3%81%93%E3%82%93%E3%81%AB%E3%81%A1%E3%81%AF%22}&signature=DypjE3COpjC2C%2BGWid8jhA8SJbY%3D
 * http://localhost:8080/map?arg={%22route%22:%20[10,10,10,15,10,20,10,25,13,30,16,33,20,35,25,36],%20%22width%22:%20200,%20%22height%22:%20200}&signature=yNPbr8uynVcgoCUVM59TBkIlHlE%3D
