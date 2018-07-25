@@ -68,6 +68,10 @@ fun startServer() {
         }
 
         intercept(ApplicationCallPipeline.Call) {
+            call.response.header("X-Content-Type-Options", "nosniff")
+        }
+
+        intercept(ApplicationCallPipeline.Call) {
             call.request.header("Origin")?.let { origin ->
                 if (config.accessControlAllowOrigins.contains(origin)) {
                     call.response.header("Access-Control-Allow-Origin", origin)
