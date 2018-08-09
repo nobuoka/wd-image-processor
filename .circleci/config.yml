@@ -146,7 +146,13 @@ workflows:
           context: org-global
           requires:
             - build-app-docker-image
+          filters:
+            branches:
+              only: master
       - build-and-push-demo-docker-image:
           context: org-global
           requires:
             - build-app-docker-image
+          filters:
+            branches:
+              only: master
