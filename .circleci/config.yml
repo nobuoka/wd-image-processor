@@ -28,7 +28,7 @@ jobs:
           paths:
             - build
 
-  build-and-push-app-docker-image:
+  build-app-docker-image:
     docker:
       - image: docker:git
     steps:
@@ -83,6 +83,27 @@ jobs:
           command: docker stop wdip-cfg
 
       - run:
+          command: |
+            mkdir -p ~/artifacts/docker-images
+            docker save -o ~/artifacts/docker-images/app.tar app
+      - persist_to_workspace:
+          root: ~/artifacts
+          paths: docker-images
+
+  push-app-docker-image:
+    docker:
+      - image: docker:git
+    steps:
+      - attach_workspace:
+          at: ~/artifacts
+      # To enable `docker` command and `docker-compose` command on Docker Executor
+      # https://circleci.com/docs/2.0/building-docker-images/
+      - setup_remote_docker:
+          version: 17.11.0-ce
+      - run:
+          name: Load Docker images
+          command: docker load -i ~/artifacts/docker-images/app.tar
+      - run:
           name: Push Docker image
           command: |
             set -x
@@ -117,11 +138,15 @@ workflows:
   build:
     jobs:
       - build-app-distribution
-      - build-and-push-app-docker-image:
+      - build-app-docker-image:
           context: org-global
           requires:
             - build-app-distribution
+      - push-app-docker-image:
+          context: org-global
+          requires:
+            - build-app-docker-image
       - build-and-push-demo-docker-image:
           context: org-global
           requires:
-            - build-and-push-app-docker-image
+            - build-app-docker-image
