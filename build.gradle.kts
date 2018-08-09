@@ -6,16 +6,13 @@ buildscript {
     repositories {
         mavenCentral()
     }
-    dependencies {
-        classpath("org.junit.platform:junit-platform-gradle-plugin:1.1.0")
-    }
 }
 
 plugins {
     application
     kotlin("jvm") version "1.2.41"
 }
-apply { plugin("org.junit.platform.gradle.plugin") }
+apply { plugin("jacoco") }
 
 group = "info.vividcode.example"
 version = "1.0-SNAPSHOT"
@@ -34,7 +31,7 @@ repositories {
 dependencies {
     val okHttpVersion = "3.9.1"
     val ktorVersion = "0.9.2"
-    val junitJupiterVersion = "5.1.0"
+    val junitJupiterVersion = "5.2.0"
 
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
@@ -54,4 +51,21 @@ tasks.withType<KotlinCompile> {
 
 kotlin {
     experimental.coroutines = Coroutines.ENABLE
+}
+
+val test = tasks.withType(Test::class.java)["test"]!!.apply {
+    useJUnitPlatform()
+}
+
+val jacocoTestReport = tasks.withType(JacocoReport::class.java)["jacocoTestReport"]!!.apply {
+    dependsOn(test)
+    reports {
+        xml.isEnabled = true
+        xml.destination = file("$buildDir/reports/jacoco/report.xml")
+        html.destination = file("$buildDir/reports/jacoco/html")
+    }
+}
+
+tasks["check"].apply {
+    dependsOn(jacocoTestReport)
 }

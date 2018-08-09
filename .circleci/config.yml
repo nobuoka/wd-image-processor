@@ -17,7 +17,11 @@ jobs:
           key: gradle-{{ checksum "~/cache-key-source-gradle" }}
       - run:
           name: Build App
-          command: ./gradlew --no-daemon installDist
+          command: ./gradlew --no-daemon build installDist
+      - run:
+          name: Report code coverage
+          command: |
+            bash <(curl -s https://codecov.io/bash)
       - save_cache:
           paths:
             - ~/.gradle
