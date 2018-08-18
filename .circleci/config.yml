@@ -8,10 +8,11 @@ jobs:
       - checkout
       - run:
           command: |
+            # See : http://vividcode.hatenablog.com/entry/circleci/cache-key-from-multiple-files
             {
               md5sum gradle/wrapper/gradle-wrapper.properties
               md5sum settings.gradle.kts
-              md5sum $(find . -name 'build.gradle.kts')
+              md5sum $(find . -name 'build.gradle.kts' | sort -r)
             } > ~/cache-key-source-gradle
       - restore_cache:
           key: gradle-{{ checksum "~/cache-key-source-gradle" }}
