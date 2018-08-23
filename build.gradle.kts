@@ -6,16 +6,13 @@ buildscript {
     repositories {
         mavenCentral()
     }
-    dependencies {
-        classpath("org.junit.platform:junit-platform-gradle-plugin:1.1.0")
-    }
 }
 
 plugins {
     application
     kotlin("jvm") version "1.2.41"
 }
-apply { plugin("org.junit.platform.gradle.plugin") }
+apply { plugin("jacoco") }
 
 group = "info.vividcode.example"
 version = "1.0-SNAPSHOT"
@@ -25,27 +22,32 @@ application {
     mainClassName = "info.vividcode.wdip.Main"
 }
 
-repositories {
-    jcenter()
-    maven { url = URI("http://dl.bintray.com/kotlin/ktor") }
-    maven { url = URI("https://dl.bintray.com/kotlin/kotlinx") }
+allprojects {
+    repositories {
+        jcenter()
+        maven { url = URI("http://dl.bintray.com/kotlin/ktor") }
+        maven { url = URI("https://dl.bintray.com/kotlin/kotlinx") }
+    }
 }
 
 dependencies {
     val okHttpVersion = "3.9.1"
     val ktorVersion = "0.9.2"
-    val junitJupiterVersion = "5.1.0"
+    val junitJupiterVersion = "5.2.0"
+
+    implementation(project(":modules:wd"))
 
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
     implementation("com.squareup.okhttp3:logging-interceptor:$okHttpVersion")
-    implementation("com.beust:klaxon:2.1.4")
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
 
     // JUnit Jupiter API and TestEngine implementation
     testCompile("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testRuntime("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
+
+    testImplementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
 }
 
 tasks.withType<KotlinCompile> {
@@ -54,4 +56,44 @@ tasks.withType<KotlinCompile> {
 
 kotlin {
     experimental.coroutines = Coroutines.ENABLE
+}
+
+val test = tasks.withType(Test::class.java)["test"]!!.apply {
+    useJUnitPlatform()
+}
+
+val jacocoMerge = tasks.create("jacocoMerge", JacocoMerge::class.java) {
+    gradle.afterProject {
+        val p = this
+        if (p.plugins.hasPlugin("jacoco")) {
+            val testTask = p.tasks.withType(Test::class.java)["test"]!!
+            executionData((testTask.extensions["jacoco"] as JacocoTaskExtension).destinationFile)
+            dependsOn(testTask)
+        }
+    }
+}
+
+val jacocoMergedReport = tasks.create("jacocoMergedReport", JacocoReport::class.java) {
+    dependsOn(jacocoMerge)
+    executionData(jacocoMerge.destinationFile)
+    sourceDirectories = files()
+    classDirectories = files()
+    gradle.afterProject {
+        val p = this
+        if (p.plugins.hasPlugin("java")) {
+            val sourceSets = (p.convention.getPlugin(JavaPluginConvention::class.java)).sourceSets
+            sourceDirectories += files(listOf(sourceSets["main"].allJava.srcDirs))
+            classDirectories += sourceSets["main"].output
+        }
+    }
+
+    reports {
+        xml.isEnabled = true
+        xml.destination = file("$buildDir/reports/jacoco/report.xml")
+        html.destination = file("$buildDir/reports/jacoco/html")
+    }
+}
+
+tasks["check"].apply {
+    dependsOn(jacocoMergedReport)
 }

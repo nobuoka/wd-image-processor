@@ -2,6 +2,7 @@ Image processing server (processed by JavaScript on WebDriver remote end)
 ==========
 
 [![CircleCI](https://circleci.com/gh/nobuoka/wd-image-processor.svg?style=svg)](https://circleci.com/gh/nobuoka/wd-image-processor)
+[![codecov](https://codecov.io/gh/nobuoka/wd-image-processor/branch/develop/graph/badge.svg)](https://codecov.io/gh/nobuoka/wd-image-processor)
 
 * AWS ECS でのデモについては [demo](./demo/README.markdown) を参照。
 
