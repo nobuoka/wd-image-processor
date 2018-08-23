@@ -2,7 +2,7 @@ package info.vividcode.wd
 
 interface WebDriverCommandExecutor :
     NewSessionCommandExecutor, DeleteSessionCommandExecutor,
-    SetWindowRectExecutor,
+    SetWindowRectExecutor, SetTimeoutsExecutor,
     GoCommandExecutor, ExecuteScriptCommandExecutor,
     TakeScreenshotCommandExecutor, TakeElementScreenshotCommandExecutor,
     FindElementCommandExecutor
@@ -22,6 +22,7 @@ interface DeleteSessionCommandExecutor {
 }
 
 interface SetWindowRectExecutor { fun WebDriverCommand.SetWindowRect.execute() }
+interface SetTimeoutsExecutor { fun WebDriverCommand.SetTimeouts.execute() }
 interface GoCommandExecutor { fun WebDriverCommand.Go.execute() }
 interface ExecuteScriptCommandExecutor { fun WebDriverCommand.ExecuteAsyncScript.execute(): ScriptResult }
 interface TakeScreenshotCommandExecutor { fun WebDriverCommand.TakeScreenshot.execute(): ByteArray }

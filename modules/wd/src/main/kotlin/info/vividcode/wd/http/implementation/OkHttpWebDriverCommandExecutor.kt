@@ -50,6 +50,18 @@ open class OkHttpWebDriverCommandExecutor(
             )
         ) {}
 
+    override fun WebDriverCommand.SetTimeouts.execute() =
+            dispatcher.dispatch(
+                    WebDriverCommandHttpRequest(
+                            "POST", "/session/$sessionPathSegment/timeouts",
+                            JsonObject(mapOf(
+                                    "script" to timeouts.scriptTimeoutInMs,
+                                    "pageLoad" to timeouts.pageLoadTimeoutInMs,
+                                    "implicit" to timeouts.implicitTimeoutInMs
+                            )).toJsonString()
+                    )
+            ) {}
+
     override fun WebDriverCommand.Go.execute() =
         dispatcher.dispatch(
             WebDriverCommandHttpRequest(

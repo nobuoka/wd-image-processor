@@ -2,6 +2,7 @@ package info.vividcode.wd.http.implementation
 
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
+import info.vividcode.wd.WebDriverError
 import info.vividcode.wd.http.WebDriverCommandHttpRequest
 import info.vividcode.wd.http.WebDriverCommandHttpRequestDispatcher
 import okhttp3.MediaType
@@ -27,7 +28,18 @@ class OkHttpWebDriverCommandHttpRequestDispatcher(
             return response.body()?.charStream()?.let { Parser().parse(it) } as? JsonObject
                     ?: throw RuntimeException("Unexpected response: $response")
         } else {
-            throw RuntimeException("Http request error: $response")
+            val jsonErrorCode = response.body()?.let { body ->
+                if (MediaType.parse("application/json; charset=utf-8") == body.contentType()) {
+                    (body.charStream().let { Parser().parse(it) } as? JsonObject)?.obj("value")?.string("error")
+                } else {
+                    null
+                }
+            }
+            if (response.code() == 408 && jsonErrorCode == "script timeout") {
+                throw WebDriverError.ScriptTimeout()
+            } else {
+                throw RuntimeException("Http request error: $response")
+            }
         }
     }
 
