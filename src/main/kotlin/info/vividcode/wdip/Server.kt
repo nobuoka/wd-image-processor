@@ -1,5 +1,6 @@
 package info.vividcode.wdip
 
+import info.vividcode.wd.Timeouts
 import info.vividcode.wdip.ktor.SignatureVerifyingInterceptor
 import info.vividcode.wdip.ktor.WdImageProcessingInterceptor
 import info.vividcode.wdip.ktor.getAndHead
@@ -12,7 +13,7 @@ import io.ktor.pipeline.PipelineInterceptor
 import io.ktor.request.header
 import io.ktor.response.header
 import io.ktor.response.respond
-import io.ktor.routing.*
+import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
@@ -30,14 +31,17 @@ fun startServer() {
     val webDriverSessionCapacity = System.getenv("WD_SESSION_CAPACITY")?.toIntOrNull() ?: 10
 
     val okHttpClient = OkHttpClient.Builder()
-        .addNetworkInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
-        .connectTimeout(20, TimeUnit.SECONDS)
-        .readTimeout(20, TimeUnit.SECONDS)
-        .writeTimeout(20, TimeUnit.SECONDS)
-        .build()
+            .addNetworkInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
+            // Avoid retrying on 408 error.
+            .retryOnConnectionFailure(false)
+            .connectTimeout(20, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .writeTimeout(20, TimeUnit.SECONDS)
+            .build()
     val wdSessionManager = WebDriverConnectionManager(
-        okHttpClient, webDriverBaseUrls,
-        webDriverSessionCapacity = webDriverSessionCapacity
+            okHttpClient, webDriverBaseUrls,
+            webDriverTimeouts = Timeouts(18_000, 18_000, 0),
+            webDriverSessionCapacity = webDriverSessionCapacity
     )
 
     val config = parseProcessorsConfigJson(Paths.get(processorsConfigJsonPath))

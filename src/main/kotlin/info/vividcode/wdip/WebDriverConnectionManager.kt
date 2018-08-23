@@ -9,7 +9,12 @@ import kotlinx.coroutines.experimental.selects.select
 import okhttp3.OkHttpClient
 import kotlin.coroutines.experimental.CoroutineContext
 
-class WebDriverConnectionManager(okHttpClient: OkHttpClient, webDriverBaseUrls: Collection<String>, webDriverSessionCapacity: Int) {
+class WebDriverConnectionManager(
+        okHttpClient: OkHttpClient,
+        webDriverBaseUrls: Collection<String>,
+        webDriverSessionCapacity: Int,
+        webDriverTimeouts: Timeouts
+) {
 
     private val wdRemoteEndManagingActorMap: Map<String, WdRemoteEndManagingActor>
 
@@ -29,6 +34,7 @@ class WebDriverConnectionManager(okHttpClient: OkHttpClient, webDriverBaseUrls: 
                                 OkHttpWebDriverCommandHttpRequestDispatcher(okHttpClient, webDriverBaseUrl)
                             ),
                             webDriverExecutionContext,
+                            timeouts = webDriverTimeouts,
                             maxNumSessionUsed = webDriverSessionCapacity
                         )
                     )
@@ -148,6 +154,7 @@ class WebDriverConnectionManager(okHttpClient: OkHttpClient, webDriverBaseUrls: 
         val webDriverExecutionContext: CoroutineContext,
         val sessionsIdle: MutableSet<WdSessionInfo> = mutableSetOf(),
         val sessionsInUse: MutableSet<WdSessionInfo> = mutableSetOf(),
+        val timeouts: Timeouts,
         val maxNumSessions: Int = 1,
         val maxNumSessionUsed: Int = 10
     ) {
@@ -167,7 +174,9 @@ class WebDriverConnectionManager(okHttpClient: OkHttpClient, webDriverBaseUrls: 
             } else {
                 val wdSession = async(webDriverExecutionContext) {
                     with(webDriverCommandExecutor) {
-                        WebDriverCommand.NewSession().execute()
+                        WebDriverCommand.NewSession().execute().also { wdSession ->
+                            WebDriverCommand.SetTimeouts(wdSession, timeouts).execute()
+                        }
                     }
                 }.await()
                 session = WdSessionInfo(this, wdSession)
@@ -205,21 +214,27 @@ class WebDriverConnectionManager(okHttpClient: OkHttpClient, webDriverBaseUrls: 
             private set(value) { field = value }
 
         suspend fun <T> use(block: suspend (WdSessionInfo) -> T): T {
-            var errorOccurred = false
+            var unSupposedErrorOccurred = false
             try {
                 return block(this)
+            } catch (e: WebDriverError) {
+                unSupposedErrorOccurred = when (e) {
+                    // `script timeout` error is supposed
+                    is WebDriverError.ScriptTimeout -> false
+                }
+                throw RuntimeException(e)
             } catch (e: Exception) {
-                errorOccurred = true
+                unSupposedErrorOccurred = true
                 throw e
             } finally {
-                finishUse(errorOccurred)
+                finishUse(unSupposedErrorOccurred)
             }
         }
 
-        suspend fun finishUse(errorOccurred: Boolean) {
+        suspend fun finishUse(unSupposedErrorOccurred: Boolean) {
             try {
                 numUsed++
-                correspondingWdRemoteEnd.returnSession(this, errorOccurred)
+                correspondingWdRemoteEnd.returnSession(this, unSupposedErrorOccurred)
             } catch (e: Exception) {
                 e.printStackTrace()
             }

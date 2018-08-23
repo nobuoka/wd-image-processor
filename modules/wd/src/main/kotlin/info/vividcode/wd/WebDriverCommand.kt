@@ -12,6 +12,9 @@ interface WebDriverCommand {
         SessionCommand
     data class SetWindowRect(override val session: WebDriverSession, val rect: Rect) :
         SessionCommand
+
+    data class SetTimeouts(override val session: WebDriverSession, val timeouts: Timeouts) : SessionCommand
+
     data class Go(override val session: WebDriverSession, val url: String) :
         SessionCommand
     data class ExecuteAsyncScript(override val session: WebDriverSession, val script: Script) :
