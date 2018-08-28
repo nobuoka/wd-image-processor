@@ -58,11 +58,11 @@ kotlin {
     experimental.coroutines = Coroutines.ENABLE
 }
 
-val test = tasks.withType(Test::class.java)["test"]!!.apply {
+val test by tasks.existing(Test::class) {
     useJUnitPlatform()
 }
 
-val jacocoMerge = tasks.create("jacocoMerge", JacocoMerge::class.java) {
+val jacocoMerge by tasks.registering(JacocoMerge::class) {
     gradle.afterProject {
         val p = this
         if (p.plugins.hasPlugin("jacoco")) {
@@ -73,9 +73,9 @@ val jacocoMerge = tasks.create("jacocoMerge", JacocoMerge::class.java) {
     }
 }
 
-val jacocoMergedReport = tasks.create("jacocoMergedReport", JacocoReport::class.java) {
+val jacocoMergedReport by tasks.registering(JacocoReport::class) {
     dependsOn(jacocoMerge)
-    executionData(jacocoMerge.destinationFile)
+    executionData(jacocoMerge.get().destinationFile)
     sourceDirectories = files()
     classDirectories = files()
     gradle.afterProject {
@@ -94,6 +94,6 @@ val jacocoMergedReport = tasks.create("jacocoMergedReport", JacocoReport::class.
     }
 }
 
-tasks["check"].apply {
+val check by tasks.existing {
     dependsOn(jacocoMergedReport)
 }
