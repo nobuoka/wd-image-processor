@@ -6,6 +6,10 @@ plugins {
 }
 apply { plugin("jacoco") }
 
+configure<JacocoPluginExtension> {
+    toolVersion = "0.8.2"
+}
+
 dependencies {
     val okHttpVersion = "3.9.1"
     val junitJupiterVersion = "5.2.0"
