@@ -1,6 +1,8 @@
 package info.vividcode.wdip
 
 import info.vividcode.wd.Timeouts
+import info.vividcode.wdip.application.WdImageProcessingExecutor
+import info.vividcode.wdip.application.WebDriverConnectionManager
 import info.vividcode.wdip.ktor.SignatureVerifyingInterceptor
 import info.vividcode.wdip.ktor.WdImageProcessingInterceptor
 import info.vividcode.wdip.ktor.getAndHead
