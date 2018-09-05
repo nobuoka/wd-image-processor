@@ -1,10 +1,9 @@
 package info.vividcode.wdip.ktor
 
 import info.vividcode.wdip.Signatures
-import info.vividcode.wdip.WdImageProcessingExecutor
+import info.vividcode.wdip.application.WdImageProcessingExecutor
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
-import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.pipeline.PipelineContext
 import io.ktor.pipeline.PipelineInterceptor
@@ -46,7 +45,7 @@ class WdImageProcessingInterceptor(
             httpCache.maxAge?.let { call.response.header("Cache-Control", "public, max-age=$it") }
         }
 
-        call.respond(HttpStatusCode.fromValue(result.statusCode),
-            result.content ?: ByteArrayContent(ContentType.Application.OctetStream, ByteArray(0)))
+        val responseContent = ByteArrayContent.from(result.content)
+        call.respond(HttpStatusCode.fromValue(result.statusCode), responseContent)
     }
 }

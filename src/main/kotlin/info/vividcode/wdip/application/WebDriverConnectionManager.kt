@@ -1,4 +1,4 @@
-package info.vividcode.wdip
+package info.vividcode.wdip.application
 
 import info.vividcode.wd.*
 import info.vividcode.wd.http.implementation.OkHttpWebDriverCommandExecutor
@@ -28,15 +28,15 @@ class WebDriverConnectionManager(
         wdRemoteEndManagingActorMap = webDriverBaseUrls.map { webDriverBaseUrl ->
             webDriverBaseUrl to
                     WdRemoteEndManagingActor(
-                        sessionRequestChannel,
-                        WdRemoteEnd(
-                            OkHttpWebDriverCommandExecutor(
-                                OkHttpWebDriverCommandHttpRequestDispatcher(okHttpClient, webDriverBaseUrl)
-                            ),
-                            webDriverExecutionContext,
-                            timeouts = webDriverTimeouts,
-                            maxNumSessionUsed = webDriverSessionCapacity
-                        )
+                            sessionRequestChannel,
+                            WdRemoteEnd(
+                                    OkHttpWebDriverCommandExecutor(
+                                            OkHttpWebDriverCommandHttpRequestDispatcher(okHttpClient, webDriverBaseUrl)
+                                    ),
+                                    webDriverExecutionContext,
+                                    timeouts = webDriverTimeouts,
+                                    maxNumSessionUsed = webDriverSessionCapacity
+                            )
                     )
         }.toMap()
         wdRemoteEndManagingActorMap.values.forEach { it.start(webDriverManagerContext) }
@@ -79,8 +79,8 @@ class WebDriverConnectionManager(
         }
 
     private class WdRemoteEndManagingActor(
-        private val sessionRequestChannel: Channel<CompletableDeferred<WdSessionInfo>>,
-        private val wdRemoteEnd: WdRemoteEnd
+            private val sessionRequestChannel: Channel<CompletableDeferred<WdSessionInfo>>,
+            private val wdRemoteEnd: WdRemoteEnd
     ) {
         private var job: Job? = null
         private val healthCheckRequestChannel = Channel<CompletableDeferred<Boolean>>(10)
@@ -105,8 +105,8 @@ class WebDriverConnectionManager(
                                     val result = wdRemoteEnd.publishSession().use { sessionInfo ->
                                         withContext(sessionInfo.correspondingWdRemoteEnd.webDriverExecutionContext) {
                                             WebDriverHealthChecker.checkAvailability(
-                                                sessionInfo.correspondingWdRemoteEnd.webDriverCommandExecutor,
-                                                sessionInfo.session
+                                                    sessionInfo.correspondingWdRemoteEnd.webDriverCommandExecutor,
+                                                    sessionInfo.session
                                             )
                                         }
                                     }
@@ -143,20 +143,20 @@ class WebDriverConnectionManager(
             }
 
         private val htmlDataUrl = createHtmlDataUrl(
-            "<!DOCTYP html><html><head><title>Health check</title></head><body></body></html>")
+                "<!DOCTYP html><html><head><title>Health check</title></head><body></body></html>")
         private val js = """
             return document.title;
         """.trimIndent()
     }
 
     private class WdRemoteEnd(
-        val webDriverCommandExecutor: OkHttpWebDriverCommandExecutor,
-        val webDriverExecutionContext: CoroutineContext,
-        val sessionsIdle: MutableSet<WdSessionInfo> = mutableSetOf(),
-        val sessionsInUse: MutableSet<WdSessionInfo> = mutableSetOf(),
-        val timeouts: Timeouts,
-        val maxNumSessions: Int = 1,
-        val maxNumSessionUsed: Int = 10
+            val webDriverCommandExecutor: OkHttpWebDriverCommandExecutor,
+            val webDriverExecutionContext: CoroutineContext,
+            val sessionsIdle: MutableSet<WdSessionInfo> = mutableSetOf(),
+            val sessionsInUse: MutableSet<WdSessionInfo> = mutableSetOf(),
+            val timeouts: Timeouts,
+            val maxNumSessions: Int = 1,
+            val maxNumSessionUsed: Int = 10
     ) {
         val onSessionReturnedEventCallbacks = mutableSetOf<CompletableDeferred<Unit>>()
 
@@ -207,8 +207,8 @@ class WebDriverConnectionManager(
     }
 
     private class WdSessionInfo(
-        val correspondingWdRemoteEnd: WdRemoteEnd,
-        val session: WebDriverSession
+            val correspondingWdRemoteEnd: WdRemoteEnd,
+            val session: WebDriverSession
     ) {
         var numUsed: Int = 0
             private set(value) { field = value }
