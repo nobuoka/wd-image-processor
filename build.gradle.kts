@@ -58,6 +58,10 @@ kotlin {
     experimental.coroutines = Coroutines.ENABLE
 }
 
+configure<JacocoPluginExtension> {
+    toolVersion = "0.8.2"
+}
+
 val test by tasks.existing(Test::class) {
     useJUnitPlatform()
 }
