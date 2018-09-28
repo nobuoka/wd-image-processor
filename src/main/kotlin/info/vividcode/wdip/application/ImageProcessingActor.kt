@@ -15,25 +15,29 @@ class ImageProcessingActor() {
             throw IllegalStateException("Already Started")
         }
         cancelRequested.set(false)
-        job = launch {
-            try {
-                while (!cancelRequested.get()) {
-                    queue.receiveImageProcessingRequest() {
-                        handleRequest(it)
-                    }
+        job = createJob(queue)
+    }
+
+    private fun createJob(queue: RequestQueue<String, String>): Job = launch {
+        try {
+            while (!cancelRequested.get()) {
+                queue.receiveImageProcessingRequest() {
+                    handleRequest(it)
                 }
-            } finally {
-                synchronized(this@ImageProcessingActor) {
-                    job = null
-                }
+            }
+        } finally {
+            synchronized(this@ImageProcessingActor) {
+                job = null
             }
         }
     }
 
-    fun stop(): Deferred<Unit> = synchronized(this) {
-        cancelRequested.set(true)
-        val j = job
-        return@synchronized async<Unit> { j?.join() }
+    fun stop(): Deferred<Unit> = run {
+        val j = synchronized(this) {
+            cancelRequested.set(true)
+            job
+        }
+        return async<Unit> { j?.join() }
     }
 
     private suspend fun handleRequest(request: String): String {
