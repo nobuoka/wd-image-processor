@@ -5,14 +5,15 @@ import info.vividcode.wdip.application.WdImageProcessingExecutor
 import info.vividcode.wdip.application.WebDriverConnectionManager
 import info.vividcode.wdip.ktor.SignatureVerifyingInterceptor
 import info.vividcode.wdip.ktor.WdImageProcessingInterceptor
+import info.vividcode.wdip.ktor.features.OriginAccessControl
 import info.vividcode.wdip.ktor.getAndHead
 import info.vividcode.wdip.ktor.routeGetAndHead
 import io.ktor.application.ApplicationCall
 import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
+import io.ktor.application.install
 import io.ktor.http.HttpStatusCode
 import io.ktor.pipeline.PipelineInterceptor
-import io.ktor.request.header
 import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.routing
@@ -77,12 +78,8 @@ fun startServer() {
             call.response.header("X-Content-Type-Options", "nosniff")
         }
 
-        intercept(ApplicationCallPipeline.Call) {
-            call.request.header("Origin")?.let { origin ->
-                if (config.accessControlAllowOrigins.contains(origin)) {
-                    call.response.header("Access-Control-Allow-Origin", origin)
-                }
-            }
+        install(OriginAccessControl) {
+            accessControlAllowOrigins.addAll(config.accessControlAllowOrigins)
         }
 
         routing {
