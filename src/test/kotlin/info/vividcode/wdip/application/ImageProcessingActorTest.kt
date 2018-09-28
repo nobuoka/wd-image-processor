@@ -36,4 +36,29 @@ internal class ImageProcessingActorTest {
         }
     }
 
+    @Test
+    internal fun stop() {
+        runBlocking {
+            val queue = RequestQueue<String, String>()
+            val actor = ImageProcessingActor()
+
+            actor.start(queue)
+
+            run {
+                val result = queue.requestImageProcessingRequest("test")
+                Assertions.assertEquals("OK! [test]", result)
+            }
+
+            val deferred = actor.stop()
+
+            // Actor will stop after last request is received.
+            run {
+                val result = queue.requestImageProcessingRequest("test")
+                Assertions.assertEquals("OK! [test]", result)
+            }
+
+            deferred.await()
+        }
+    }
+
 }

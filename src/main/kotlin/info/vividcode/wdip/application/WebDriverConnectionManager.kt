@@ -7,6 +7,7 @@ import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.selects.select
 import okhttp3.OkHttpClient
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.experimental.CoroutineContext
 
 class WebDriverConnectionManager(
@@ -82,12 +83,12 @@ class WebDriverConnectionManager(
             private val sessionRequestChannel: Channel<CompletableDeferred<WdSessionInfo>>,
             private val wdRemoteEnd: WdRemoteEnd
     ) {
-        private var job: Job? = null
+        private val jobReference = AtomicReference<Job?>()
         private val healthCheckRequestChannel = Channel<CompletableDeferred<Boolean>>(10)
 
         /** Must be run on managerContext. */
         suspend fun checkWebDriverRemoteEndAvailable(): Boolean =
-            if (job?.isActive != true) {
+            if (jobReference.get()?.isActive != true) {
                 false
             } else {
                 val resultDeferred = CompletableDeferred<Boolean>()
@@ -95,8 +96,8 @@ class WebDriverConnectionManager(
                 resultDeferred.await()
             }
 
-        fun start(managerContext: CoroutineContext) = synchronized(this) {
-            job = launch(managerContext) {
+        fun start(managerContext: CoroutineContext) {
+            val job = launch(managerContext) {
                 while (true) {
                     if (wdRemoteEnd.canPublishSession()) {
                         select {
@@ -131,6 +132,7 @@ class WebDriverConnectionManager(
                     }
                 }
             }
+            jobReference.set(job)
         }
     }
 
