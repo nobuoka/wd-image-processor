@@ -10,7 +10,7 @@ buildscript {
 
 plugins {
     application
-    kotlin("jvm") version "1.2.41"
+    kotlin("jvm") version "1.2.70"
 }
 apply { plugin("jacoco") }
 
