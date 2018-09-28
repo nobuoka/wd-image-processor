@@ -48,6 +48,7 @@ dependencies {
     testRuntime("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 
     testImplementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
 }
 
 tasks.withType<KotlinCompile> {
