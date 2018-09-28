@@ -10,7 +10,7 @@ buildscript {
 
 plugins {
     application
-    kotlin("jvm") version "1.2.41"
+    kotlin("jvm") version "1.2.71"
 }
 apply { plugin("jacoco") }
 
@@ -48,6 +48,7 @@ dependencies {
     testRuntime("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 
     testImplementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
 }
 
 tasks.withType<KotlinCompile> {
@@ -58,11 +59,15 @@ kotlin {
     experimental.coroutines = Coroutines.ENABLE
 }
 
-val test = tasks.withType(Test::class.java)["test"]!!.apply {
+configure<JacocoPluginExtension> {
+    toolVersion = "0.8.2"
+}
+
+val test by tasks.existing(Test::class) {
     useJUnitPlatform()
 }
 
-val jacocoMerge = tasks.create("jacocoMerge", JacocoMerge::class.java) {
+val jacocoMerge by tasks.registering(JacocoMerge::class) {
     gradle.afterProject {
         val p = this
         if (p.plugins.hasPlugin("jacoco")) {
@@ -73,9 +78,9 @@ val jacocoMerge = tasks.create("jacocoMerge", JacocoMerge::class.java) {
     }
 }
 
-val jacocoMergedReport = tasks.create("jacocoMergedReport", JacocoReport::class.java) {
+val jacocoMergedReport by tasks.registering(JacocoReport::class) {
     dependsOn(jacocoMerge)
-    executionData(jacocoMerge.destinationFile)
+    executionData(jacocoMerge.get().destinationFile)
     sourceDirectories = files()
     classDirectories = files()
     gradle.afterProject {
@@ -94,6 +99,6 @@ val jacocoMergedReport = tasks.create("jacocoMergedReport", JacocoReport::class.
     }
 }
 
-tasks["check"].apply {
+val check by tasks.existing {
     dependsOn(jacocoMergedReport)
 }
