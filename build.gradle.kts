@@ -1,3 +1,5 @@
+import org.ajoberstar.grgit.Grgit
+import org.ajoberstar.grgit.gradle.GrgitPlugin
 import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URI
@@ -11,6 +13,7 @@ buildscript {
 plugins {
     application
     kotlin("jvm") version "1.2.71"
+    id("org.ajoberstar.grgit") version "3.0.0-rc.2"
 }
 apply { plugin("jacoco") }
 
@@ -65,6 +68,25 @@ configure<JacocoPluginExtension> {
 
 val test by tasks.existing(Test::class) {
     useJUnitPlatform()
+}
+
+val grgit = project.ext["grgit"] as Grgit
+val gitRevisionBuildDirPath = "$buildDir/generated/git"
+val generateGitRevision by tasks.registering {
+    val gitRevision = grgit.head().id
+    inputs.property("git-revision", gitRevision)
+    outputs.dir(gitRevisionBuildDirPath)
+
+    doLast {
+        val file = File(gitRevisionBuildDirPath, "wdip-git-revision")
+        file.parentFile.mkdirs()
+        file.writeText(gitRevision)
+    }
+}
+
+val processResources by tasks.existing(ProcessResources::class) {
+    dependsOn(generateGitRevision)
+    from(gitRevisionBuildDirPath)
 }
 
 val jacocoMerge by tasks.registering(JacocoMerge::class) {

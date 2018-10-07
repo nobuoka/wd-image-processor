@@ -76,7 +76,7 @@ jobs:
       - run:
           command: |
             docker build -t wdip-system-test systemTest
-            docker run -it --rm --network=host -e TEST_BASE_URL=http://localhost:8080 wdip-system-test
+            docker run -it --rm --network=host -e TEST_BASE_URL=http://localhost:8080 -e "GIT_REVISION=$CIRCLE_SHA1" wdip-system-test
       - run:
           when: always
           command: docker stop wdip-test
