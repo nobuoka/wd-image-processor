@@ -50,7 +50,7 @@ internal class ServerTest {
             Assertions.assertTrue(call.requestHandled)
             Assertions.assertEquals(HttpStatusCode.OK, call.response.status())
             val rev = call.response.headers["X-Rev"]
-            Assertions.assertTrue(rev?.let { it.startsWith("git:") && it.length >= 5 } == true) {
+            Assertions.assertTrue(rev?.let { Regex("[0-9a-z]{40}").matchEntire(it) != null } == true) {
                 "Value of `X-Rev` header field is not expected : $rev"
             }
             Assertions.assertEquals(

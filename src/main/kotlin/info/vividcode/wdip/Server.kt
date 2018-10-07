@@ -120,7 +120,9 @@ internal fun Application.setup(
 
         val gitRevision = Resources.readAsUtf8Text("/wdip-git-revision")
         getAndHead("/-/system-info") {
-            call.response.header("X-Rev", gitRevision?.let { "git:$gitRevision" } ?: "unknown")
+            if (gitRevision != null) {
+                call.response.header("X-Rev", gitRevision)
+            }
             call.respond("")
         }
 
