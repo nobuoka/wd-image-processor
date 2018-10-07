@@ -9,6 +9,7 @@ import io.ktor.server.testing.withTestApplication
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import kotlin.test.assertNotNull
 
 internal class ServerTest {
 
@@ -37,6 +38,31 @@ internal class ServerTest {
                     call.response.headers.allValues()
             )
             Assertions.assertEquals("OK", call.response.content)
+        }
+    }
+
+    @Test
+    internal fun systemInfo() = withWdipApplicationModule {
+        handleRequest {
+            uri = "/-/system-info"
+        }.let { call ->
+            Assertions.assertTrue(call.requestHandled)
+            Assertions.assertEquals(HttpStatusCode.OK, call.response.status())
+            val rev = call.response.headers["X-Rev"]
+            Assertions.assertTrue(rev?.let { it.startsWith("git:") && it.length >= 5 } == true) {
+                "Value of `X-Rev` header field is not expected : $rev"
+            }
+            Assertions.assertEquals(
+                    Headers.build {
+                        set("Vary", "Origin")
+                        set("X-Content-Type-Options", "nosniff")
+                        set("X-Rev", assertNotNull(rev))
+                        set("Content-Length", "0")
+                        set("Content-Type", "text/plain; charset=UTF-8")
+                    },
+                    call.response.headers.allValues()
+            )
+            Assertions.assertEquals("", call.response.content)
         }
     }
 

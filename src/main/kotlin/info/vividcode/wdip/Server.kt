@@ -118,6 +118,14 @@ internal fun Application.setup(
             }
         }
 
+        val gitRevision = this::class.java.getResourceAsStream("/wdip-git-revision")?.use { inputStream ->
+            String(inputStream.readBytes(), Charsets.UTF_8)
+        }
+        getAndHead("/-/system-info") {
+            call.response.header("X-Rev", gitRevision?.let { "git:$gitRevision" } ?: "unknown")
+            call.respond("")
+        }
+
         wdImageProcessingEndpoints.forEach { endpoint ->
             routeGetAndHead(endpoint.path) {
                 endpoint.interceptors.forEach(::handle)
