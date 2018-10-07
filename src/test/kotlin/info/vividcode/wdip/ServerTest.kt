@@ -8,6 +8,7 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.withTestApplication
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
 
@@ -80,6 +81,24 @@ internal class ServerTest {
                     },
                     call.response.headers.allValues()
             )
+        }
+    }
+
+    @Nested
+    internal inner class ResourcesTest {
+        @Test
+        internal fun readAsUtf8Text_normal() {
+            val read = Resources.readAsUtf8Text("/info/vividcode/wdip/utf8-text.txt")
+            Assertions.assertEquals(
+                    "This is UTF-8 text file.\nこれは UTF-8 のテキストファイルです。 (Japanese)\n",
+                    read
+            )
+        }
+
+        @Test
+        internal fun readAsUtf8Text_notExist() {
+            val read = Resources.readAsUtf8Text("/not-found")
+            Assertions.assertNull(read)
         }
     }
 

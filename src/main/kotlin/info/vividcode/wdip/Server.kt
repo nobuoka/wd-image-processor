@@ -118,9 +118,7 @@ internal fun Application.setup(
             }
         }
 
-        val gitRevision = this::class.java.getResourceAsStream("/wdip-git-revision")?.use { inputStream ->
-            String(inputStream.readBytes(), Charsets.UTF_8)
-        }
+        val gitRevision = Resources.readAsUtf8Text("/wdip-git-revision")
         getAndHead("/-/system-info") {
             call.response.header("X-Rev", gitRevision?.let { "git:$gitRevision" } ?: "unknown")
             call.respond("")
@@ -132,6 +130,13 @@ internal fun Application.setup(
             }
         }
     }
+}
+
+internal object Resources {
+    internal fun readAsUtf8Text(resourcePath: String): String? =
+            Resources::class.java.getResourceAsStream(resourcePath)?.use { inputStream ->
+                String(inputStream.readBytes(), Charsets.UTF_8)
+            }
 }
 
 internal class WdImageProcessingEndpoint(

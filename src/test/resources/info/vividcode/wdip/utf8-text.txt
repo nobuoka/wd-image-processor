@@ -1,0 +1,2 @@
+This is UTF-8 text file.
+これは UTF-8 のテキストファイルです。 (Japanese)
