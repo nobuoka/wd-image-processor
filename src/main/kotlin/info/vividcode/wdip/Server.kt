@@ -8,10 +8,7 @@ import info.vividcode.wdip.ktor.WdImageProcessingInterceptor
 import info.vividcode.wdip.ktor.features.OriginAccessControl
 import info.vividcode.wdip.ktor.getAndHead
 import info.vividcode.wdip.ktor.routeGetAndHead
-import io.ktor.application.ApplicationCall
-import io.ktor.application.ApplicationCallPipeline
-import io.ktor.application.call
-import io.ktor.application.install
+import io.ktor.application.*
 import io.ktor.http.HttpStatusCode
 import io.ktor.pipeline.PipelineInterceptor
 import io.ktor.response.header
@@ -65,62 +62,86 @@ fun startServer() {
     })
 
     val server = embeddedServer(Netty, 8080) {
-        intercept(ApplicationCallPipeline.Call) {
-            try {
-                proceed()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                throw e
-            }
-        }
-
-        intercept(ApplicationCallPipeline.Call) {
-            call.response.header("X-Content-Type-Options", "nosniff")
-        }
-
-        install(OriginAccessControl) {
-            accessControlAllowOrigins.addAll(config.accessControlAllowOrigins)
-        }
-
-        routing {
-            getAndHead("/-/health/app-only") {
-                call.respond("OK")
-            }
-            getAndHead("/-/health/all") {
-                val result = wdSessionManager.checkAllWebDriverRemoteEndsAvailable()
-                val healthCount = result.count { it }
-                val countString = "(WebDriver remote ends: $healthCount / ${result.size})"
-                if (healthCount == result.size) {
-                    call.respond("OK $countString")
-                } else {
-                    call.respond(HttpStatusCode.ServiceUnavailable, "NG $countString")
-                }
-            }
-            getAndHead("/-/health/wd") {
-                val argUrl = call.request.queryParameters["url"]
-                val result = argUrl?.let { wdSessionManager.checkWebDriverRemoteEndAvailable(it) }
-                val message = "(WebDriver remote end: $argUrl)"
-                if (result == true) {
-                    call.respond("OK $message")
-                } else {
-                    call.respond(HttpStatusCode.ServiceUnavailable, "NG $message")
-                }
-            }
-
-            wdImageProcessingEndpoints.forEach { endpoint ->
-                routeGetAndHead(endpoint.path) {
-                    endpoint.interceptors.forEach(::handle)
-                }
-            }
-        }
+        setup(config, wdSessionManager, wdImageProcessingEndpoints)
     }
+
     serverReference.set(server)
 
     Runtime.getRuntime().addShutdownHook(shutdownHookThread)
     server.start(wait = true)
 }
 
-private class WdImageProcessingEndpoint(
+internal fun Application.setup(
+        config: WdipSetting,
+        wdSessionManager: WebDriverConnectionManager,
+        wdImageProcessingEndpoints: List<WdImageProcessingEndpoint>
+) {
+    intercept(ApplicationCallPipeline.Call) {
+        try {
+            proceed()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    intercept(ApplicationCallPipeline.Call) {
+        call.response.header("X-Content-Type-Options", "nosniff")
+    }
+
+    install(OriginAccessControl) {
+        accessControlAllowOrigins.addAll(config.accessControlAllowOrigins)
+    }
+
+    routing {
+        getAndHead("/-/health/app-only") {
+            call.respond("OK")
+        }
+        getAndHead("/-/health/all") {
+            val result = wdSessionManager.checkAllWebDriverRemoteEndsAvailable()
+            val healthCount = result.count { it }
+            val countString = "(WebDriver remote ends: $healthCount / ${result.size})"
+            if (healthCount == result.size) {
+                call.respond("OK $countString")
+            } else {
+                call.respond(HttpStatusCode.ServiceUnavailable, "NG $countString")
+            }
+        }
+        getAndHead("/-/health/wd") {
+            val argUrl = call.request.queryParameters["url"]
+            val result = argUrl?.let { wdSessionManager.checkWebDriverRemoteEndAvailable(it) }
+            val message = "(WebDriver remote end: $argUrl)"
+            if (result == true) {
+                call.respond("OK $message")
+            } else {
+                call.respond(HttpStatusCode.ServiceUnavailable, "NG $message")
+            }
+        }
+
+        val gitRevision = Resources.readAsUtf8Text("/wdip-git-revision")
+        getAndHead("/-/system-info") {
+            if (gitRevision != null) {
+                call.response.header("X-Rev", gitRevision)
+            }
+            call.respond("")
+        }
+
+        wdImageProcessingEndpoints.forEach { endpoint ->
+            routeGetAndHead(endpoint.path) {
+                endpoint.interceptors.forEach(::handle)
+            }
+        }
+    }
+}
+
+internal object Resources {
+    internal fun readAsUtf8Text(resourcePath: String): String? =
+            Resources::class.java.getResourceAsStream(resourcePath)?.use { inputStream ->
+                String(inputStream.readBytes(), Charsets.UTF_8)
+            }
+}
+
+internal class WdImageProcessingEndpoint(
     val path: String,
     val interceptors: List<PipelineInterceptor<Unit, ApplicationCall>>
 )
