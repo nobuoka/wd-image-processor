@@ -1,8 +1,8 @@
 package info.vividcode.wdip.ktor
 
 import info.vividcode.wdip.application.WdImageProcessingResultContent
-import io.ktor.content.OutgoingContent
 import io.ktor.http.ContentType
+import io.ktor.http.content.OutgoingContent
 import io.ktor.http.withCharset
 
 class ByteArrayContent(
