@@ -35,7 +35,7 @@ allprojects {
 
 dependencies {
     val okHttpVersion = "3.9.1"
-    val ktorVersion = "0.9.2"
+    val ktorVersion = "0.9.5"
     val junitJupiterVersion = "5.2.0"
 
     implementation(project(":modules:wd"))
