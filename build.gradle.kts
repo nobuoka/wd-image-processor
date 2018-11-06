@@ -40,6 +40,7 @@ dependencies {
 
     implementation(project(":modules:wd"))
     implementation(project(":modules:wd-okhttp"))
+    implementation(project(":modules:wdip-usecase"))
 
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
@@ -51,7 +52,6 @@ dependencies {
     testCompile("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testRuntime("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 
-    testImplementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
 }
 

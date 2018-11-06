@@ -8,9 +8,9 @@ data class WdImageProcessingResultContent(
 ) {
 
     companion object {
-        internal fun createJpeg(jpegBytes: ByteArray) = WdImageProcessingResultContent(jpegBytes, Type.IMAGE_JPEG)
-        internal fun createPng(pngBytes: ByteArray) = WdImageProcessingResultContent(pngBytes, Type.IMAGE_PNG)
-        internal fun createText(text: String) = WdImageProcessingResultContent(text.toByteArray(Charsets.UTF_8), Type.TEXT)
+        fun createJpeg(jpegBytes: ByteArray) = WdImageProcessingResultContent(jpegBytes, Type.IMAGE_JPEG)
+        fun createPng(pngBytes: ByteArray) = WdImageProcessingResultContent(pngBytes, Type.IMAGE_PNG)
+        fun createText(text: String) = WdImageProcessingResultContent(text.toByteArray(Charsets.UTF_8), Type.TEXT)
     }
 
     enum class Type {
