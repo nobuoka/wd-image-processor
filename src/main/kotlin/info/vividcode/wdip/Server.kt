@@ -1,6 +1,7 @@
 package info.vividcode.wdip
 
 import info.vividcode.wd.Timeouts
+import info.vividcode.wd.http.implementation.OkHttpWebDriverCommandHttpRequestDispatcher
 import info.vividcode.wdip.application.WdImageProcessingExecutor
 import info.vividcode.wdip.application.WebDriverConnectionManager
 import info.vividcode.wdip.ktor.SignatureVerifyingInterceptor
@@ -39,10 +40,9 @@ fun startServer() {
             .writeTimeout(20, TimeUnit.SECONDS)
             .build()
     val wdSessionManager = WebDriverConnectionManager(
-            okHttpClient, webDriverBaseUrls,
-            webDriverTimeouts = Timeouts(18_000, 18_000, 0),
-            webDriverSessionCapacity = webDriverSessionCapacity
-    )
+            OkHttpWebDriverCommandHttpRequestDispatcher.Factory(okHttpClient), webDriverBaseUrls,
+            webDriverSessionCapacity = webDriverSessionCapacity,
+            webDriverTimeouts = Timeouts(18_000, 18_000, 0))
 
     val config = parseProcessorsConfigJson(Paths.get(processorsConfigJsonPath))
     val wdImageProcessingEndpoints = config.processors.map {

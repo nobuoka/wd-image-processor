@@ -1,6 +1,7 @@
 package info.vividcode.wdip
 
 import info.vividcode.wd.Timeouts
+import info.vividcode.wd.http.implementation.OkHttpWebDriverCommandHttpRequestDispatcher
 import info.vividcode.wdip.application.WebDriverConnectionManager
 import io.ktor.http.Headers
 import io.ktor.http.HttpStatusCode
@@ -16,7 +17,10 @@ internal class ServerTest {
 
     private fun <T> withWdipApplicationModule(test: TestApplicationEngine.() -> T) = withTestApplication {
         val config = WdipSetting(emptySet(), emptyList())
-        val wdSessionManager = WebDriverConnectionManager(OkHttpClient(), listOf("http://test.com/wd"), 1, Timeouts(1, 1, 1))
+        val wdSessionManager = WebDriverConnectionManager(
+                OkHttpWebDriverCommandHttpRequestDispatcher.Factory(OkHttpClient()), listOf("http://test.com/wd"),
+                1, Timeouts(1, 1, 1)
+        )
         application.setup(config, wdSessionManager, emptyList())
 
         test()

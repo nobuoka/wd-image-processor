@@ -3,11 +3,9 @@ package info.vividcode.wdip.application
 import info.vividcode.wd.*
 import info.vividcode.wd.http.WebDriverCommandHttpRequestDispatcher
 import info.vividcode.wd.http.implementation.OkHttpWebDriverCommandExecutor
-import info.vividcode.wd.http.implementation.OkHttpWebDriverCommandHttpRequestDispatcher
 import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.selects.select
-import okhttp3.OkHttpClient
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.experimental.CoroutineContext
 
@@ -17,26 +15,6 @@ class WebDriverConnectionManager(
         webDriverSessionCapacity: Int,
         webDriverTimeouts: Timeouts
 ) {
-
-    @Deprecated("Remove dependency to OkHttpClient from this class",
-            replaceWith = ReplaceWith(
-                    "WebDriverConnectionManager(OkHttpWebDriverCommandHttpRequestDispatcher.Factory(okHttpClient), " +
-                            "webDriverBaseUrls, webDriverSessionCapacity, webDriverTimeouts)",
-                    "info.vividcode.wdip.application.WebDriverConnectionManager",
-                    "info.vividcode.wd.http.implementation.OkHttpWebDriverCommandHttpRequestDispatcher"
-            )
-    )
-    constructor(
-            okHttpClient: OkHttpClient,
-            webDriverBaseUrls: Collection<String>,
-            webDriverSessionCapacity: Int,
-            webDriverTimeouts: Timeouts
-    ) : this(
-            OkHttpWebDriverCommandHttpRequestDispatcher.Factory(okHttpClient),
-            webDriverBaseUrls,
-            webDriverSessionCapacity,
-            webDriverTimeouts
-    )
 
     private val wdRemoteEndManagingActorMap: Map<String, WdRemoteEndManagingActor>
 
