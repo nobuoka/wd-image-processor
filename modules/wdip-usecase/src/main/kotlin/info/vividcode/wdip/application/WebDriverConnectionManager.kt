@@ -152,7 +152,7 @@ class WebDriverConnectionManager(
     }
 
     private class WdRemoteEnd(
-            val webDriverCommandExecutor: OkHttpWebDriverCommandExecutor,
+            val webDriverCommandExecutor: WebDriverCommandExecutor,
             val webDriverExecutionContext: CoroutineContext,
             val sessionsIdle: MutableSet<WdSessionInfo> = mutableSetOf(),
             val sessionsInUse: MutableSet<WdSessionInfo> = mutableSetOf(),
