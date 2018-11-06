@@ -22,6 +22,8 @@ dependencies {
     testCompileOnly("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 
+    testImplementation(project(":modules:test-utils"))
+
     testImplementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
     testImplementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
 }

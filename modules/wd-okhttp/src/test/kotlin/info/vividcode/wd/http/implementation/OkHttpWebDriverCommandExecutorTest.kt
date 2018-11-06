@@ -1,5 +1,6 @@
 package info.vividcode.wd.http.implementation
 
+import info.vividcode.test.utils.MockWebServerResourceExtension
 import info.vividcode.wd.*
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
