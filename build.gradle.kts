@@ -39,6 +39,7 @@ dependencies {
     val junitJupiterVersion = "5.2.0"
 
     implementation(project(":modules:wd"))
+    implementation(project(":modules:wd-okhttp"))
 
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
