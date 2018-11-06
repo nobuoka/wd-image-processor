@@ -1,7 +1,8 @@
-package info.vividcode.wd.http.implementation
+package info.vividcode.wd.http
 
 import info.vividcode.test.utils.MockWebServerResourceExtension
 import info.vividcode.wd.*
+import info.vividcode.wd.http.implementation.OkHttpWebDriverCommandHttpRequestDispatcher
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.Assertions

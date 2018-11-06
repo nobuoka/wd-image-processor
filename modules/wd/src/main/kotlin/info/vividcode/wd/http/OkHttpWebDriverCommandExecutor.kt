@@ -1,10 +1,8 @@
-package info.vividcode.wd.http.implementation
+package info.vividcode.wd.http
 
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import info.vividcode.wd.*
-import info.vividcode.wd.http.WebDriverCommandHttpRequest
-import info.vividcode.wd.http.WebDriverCommandHttpRequestDispatcher
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.*

@@ -1,8 +1,8 @@
 package info.vividcode.wdip.application
 
 import info.vividcode.wd.*
+import info.vividcode.wd.http.OkHttpWebDriverCommandExecutor
 import info.vividcode.wd.http.WebDriverCommandHttpRequestDispatcher
-import info.vividcode.wd.http.implementation.OkHttpWebDriverCommandExecutor
 import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.selects.select
