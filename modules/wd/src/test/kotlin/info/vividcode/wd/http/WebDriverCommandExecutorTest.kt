@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 
-internal class OkHttpWebDriverCommandExecutorTest {
+internal class WebDriverCommandExecutorTest {
 
     @JvmField
     @RegisterExtension
@@ -24,7 +24,7 @@ internal class OkHttpWebDriverCommandExecutorTest {
     internal fun newSessionCommand() {
         val url = mockWebServerResourceExtension.mockWebServerUrl
         val dispatcher = OkHttpWebDriverCommandHttpRequestDispatcher(OkHttpClient.Builder().build(), url)
-        val testTarget = OkHttpWebDriverCommandExecutor(dispatcher)
+        val testTarget = WebDriverCommandExecutor(dispatcher)
 
         mockWebServerResourceExtension.mockWebServer.enqueue(
                 createSuccessTestResponseWithValueJsonString(
@@ -52,7 +52,7 @@ internal class OkHttpWebDriverCommandExecutorTest {
     internal fun deleteSessionCommand() {
         val url = mockWebServerResourceExtension.mockWebServerUrl
         val dispatcher = OkHttpWebDriverCommandHttpRequestDispatcher(OkHttpClient.Builder().build(), url)
-        val testTarget = OkHttpWebDriverCommandExecutor(dispatcher)
+        val testTarget = WebDriverCommandExecutor(dispatcher)
 
         mockWebServerResourceExtension.mockWebServer.enqueue(
                 createSuccessTestResponseWithValueJsonString("null")
@@ -76,7 +76,7 @@ internal class OkHttpWebDriverCommandExecutorTest {
     internal fun setWindowRectCommand() {
         val url = mockWebServerResourceExtension.mockWebServerUrl
         val dispatcher = OkHttpWebDriverCommandHttpRequestDispatcher(OkHttpClient.Builder().build(), url)
-        val testTarget = OkHttpWebDriverCommandExecutor(dispatcher)
+        val testTarget = WebDriverCommandExecutor(dispatcher)
 
         mockWebServerResourceExtension.mockWebServer.enqueue(
                 createSuccessTestResponseWithValueJsonString("null")
@@ -101,7 +101,7 @@ internal class OkHttpWebDriverCommandExecutorTest {
     internal fun setTimeoutsCommand() {
         val url = mockWebServerResourceExtension.mockWebServerUrl
         val dispatcher = OkHttpWebDriverCommandHttpRequestDispatcher(OkHttpClient.Builder().build(), url)
-        val testTarget = OkHttpWebDriverCommandExecutor(dispatcher)
+        val testTarget = WebDriverCommandExecutor(dispatcher)
 
         mockWebServerResourceExtension.mockWebServer.enqueue(
                 createSuccessTestResponseWithValueJsonString("null")
@@ -130,7 +130,7 @@ internal class OkHttpWebDriverCommandExecutorTest {
     internal fun navigateToCommand() {
         val url = mockWebServerResourceExtension.mockWebServerUrl
         val dispatcher = OkHttpWebDriverCommandHttpRequestDispatcher(OkHttpClient.Builder().build(), url)
-        val testTarget = OkHttpWebDriverCommandExecutor(dispatcher)
+        val testTarget = WebDriverCommandExecutor(dispatcher)
 
         mockWebServerResourceExtension.mockWebServer.enqueue(
                 createSuccessTestResponseWithValueJsonString("null")
@@ -158,7 +158,7 @@ internal class OkHttpWebDriverCommandExecutorTest {
     internal fun executeAsyncScriptCommand() {
         val url = mockWebServerResourceExtension.mockWebServerUrl
         val dispatcher = OkHttpWebDriverCommandHttpRequestDispatcher(OkHttpClient.Builder().build(), url)
-        val testTarget = OkHttpWebDriverCommandExecutor(dispatcher)
+        val testTarget = WebDriverCommandExecutor(dispatcher)
 
         mockWebServerResourceExtension.mockWebServer.enqueue(
                 createSuccessTestResponseWithValueJsonString("[true, [1]]")
@@ -199,7 +199,7 @@ internal class OkHttpWebDriverCommandExecutorTest {
     internal fun takeElementScreenshotCommand() {
         val url = mockWebServerResourceExtension.mockWebServerUrl
         val dispatcher = OkHttpWebDriverCommandHttpRequestDispatcher(OkHttpClient.Builder().build(), url)
-        val testTarget = OkHttpWebDriverCommandExecutor(dispatcher)
+        val testTarget = WebDriverCommandExecutor(dispatcher)
 
         val testScreenshotEncoded = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
         mockWebServerResourceExtension.mockWebServer.enqueue(
@@ -230,7 +230,7 @@ internal class OkHttpWebDriverCommandExecutorTest {
     internal fun takeScreenshotCommand() {
         val url = mockWebServerResourceExtension.mockWebServerUrl
         val dispatcher = OkHttpWebDriverCommandHttpRequestDispatcher(OkHttpClient.Builder().build(), url)
-        val testTarget = OkHttpWebDriverCommandExecutor(dispatcher)
+        val testTarget = WebDriverCommandExecutor(dispatcher)
 
         val testScreenshotEncoded = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
         mockWebServerResourceExtension.mockWebServer.enqueue(
@@ -258,7 +258,7 @@ internal class OkHttpWebDriverCommandExecutorTest {
     internal fun findElementCommand() {
         val url = mockWebServerResourceExtension.mockWebServerUrl
         val dispatcher = OkHttpWebDriverCommandHttpRequestDispatcher(OkHttpClient.Builder().build(), url)
-        val testTarget = OkHttpWebDriverCommandExecutor(dispatcher)
+        val testTarget = WebDriverCommandExecutor(dispatcher)
 
         val testElementReference = "04fcbabf-f354-414c-90b0-f61a25817b2f"
         mockWebServerResourceExtension.mockWebServer.enqueue(

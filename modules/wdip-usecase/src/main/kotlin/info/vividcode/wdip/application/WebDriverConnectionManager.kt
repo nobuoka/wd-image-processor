@@ -1,7 +1,7 @@
 package info.vividcode.wdip.application
 
 import info.vividcode.wd.*
-import info.vividcode.wd.http.OkHttpWebDriverCommandExecutor
+import info.vividcode.wd.http.WebDriverCommandExecutor
 import info.vividcode.wd.http.WebDriverCommandHttpRequestDispatcher
 import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.channels.Channel
@@ -30,7 +30,7 @@ class WebDriverConnectionManager(
                     WdRemoteEndManagingActor(
                             sessionRequestChannel,
                             WdRemoteEnd(
-                                    OkHttpWebDriverCommandExecutor(
+                                    WebDriverCommandExecutor(
                                             webDriverCommandHttpRequestDispatcherFactory.create(webDriverBaseUrl)
                                     ),
                                     webDriverExecutionContext,
@@ -67,7 +67,7 @@ class WebDriverConnectionManager(
         }
     }
 
-    suspend fun <T> withSession(block: WebDriverCommandExecutor.(session: WebDriverSession) -> T): T =
+    suspend fun <T> withSession(block: info.vividcode.wd.WebDriverCommandExecutor.(session: WebDriverSession) -> T): T =
         withContext(webDriverManagerContext) {
             val sessionDeferred = CompletableDeferred<WdSessionInfo>()
             sessionRequestChannel.send(sessionDeferred)
@@ -136,7 +136,7 @@ class WebDriverConnectionManager(
     }
 
     object WebDriverHealthChecker {
-        fun checkAvailability(webDriverCommandExecutor: WebDriverCommandExecutor, session: WebDriverSession): Boolean =
+        fun checkAvailability(webDriverCommandExecutor: info.vividcode.wd.WebDriverCommandExecutor, session: WebDriverSession): Boolean =
             with (webDriverCommandExecutor) {
                 WebDriverCommand.Go(session, htmlDataUrl).execute()
                 val rawExecuteResult = WebDriverCommand.ExecuteAsyncScript(session, Script(js, listOf())).execute()
@@ -151,7 +151,7 @@ class WebDriverConnectionManager(
     }
 
     private class WdRemoteEnd(
-            val webDriverCommandExecutor: WebDriverCommandExecutor,
+            val webDriverCommandExecutor: info.vividcode.wd.WebDriverCommandExecutor,
             val webDriverExecutionContext: CoroutineContext,
             val sessionsIdle: MutableSet<WdSessionInfo> = mutableSetOf(),
             val sessionsInUse: MutableSet<WdSessionInfo> = mutableSetOf(),
