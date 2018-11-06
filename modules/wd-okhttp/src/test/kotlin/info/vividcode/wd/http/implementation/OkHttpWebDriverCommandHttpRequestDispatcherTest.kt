@@ -1,6 +1,7 @@
 package info.vividcode.wd.http.implementation
 
 import com.beust.klaxon.JsonObject
+import info.vividcode.test.utils.MockWebServerResourceExtension
 import info.vividcode.wd.http.WebDriverCommandHttpRequest
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse

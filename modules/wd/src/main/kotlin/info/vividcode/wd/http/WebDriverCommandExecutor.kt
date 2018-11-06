@@ -1,16 +1,15 @@
-package info.vividcode.wd.http.implementation
+package info.vividcode.wd.http
 
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import info.vividcode.wd.*
-import info.vividcode.wd.http.WebDriverCommandHttpRequest
-import info.vividcode.wd.http.WebDriverCommandHttpRequestDispatcher
+import info.vividcode.wd.WebDriverCommandExecutor
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.*
 
-open class OkHttpWebDriverCommandExecutor(
-    protected val dispatcher: WebDriverCommandHttpRequestDispatcher
+class WebDriverCommandExecutor(
+        private val dispatcher: WebDriverCommandHttpRequestDispatcher
 ) : WebDriverCommandExecutor {
 
     class OkHttpWebDriverSession(override val id: String) : WebDriverSession
