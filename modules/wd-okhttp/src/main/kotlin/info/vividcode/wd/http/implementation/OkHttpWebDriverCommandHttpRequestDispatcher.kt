@@ -15,6 +15,11 @@ class OkHttpWebDriverCommandHttpRequestDispatcher(
     private val baseUrl: String
 ) : WebDriverCommandHttpRequestDispatcher {
 
+    class Factory(private val okHttpClient: OkHttpClient) : WebDriverCommandHttpRequestDispatcher.Factory {
+        override fun create(baseUrl: String): WebDriverCommandHttpRequestDispatcher =
+                OkHttpWebDriverCommandHttpRequestDispatcher(okHttpClient, baseUrl)
+    }
+
     override fun <T> dispatch(commandHttpRequest: WebDriverCommandHttpRequest, responseHandler: (JsonObject) -> T): T =
         responseHandler(dispatch(commandHttpRequest))
 
