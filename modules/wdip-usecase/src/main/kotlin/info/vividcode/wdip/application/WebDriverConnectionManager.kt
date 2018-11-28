@@ -72,7 +72,7 @@ class WebDriverConnectionManager(
             val sessionDeferred = CompletableDeferred<WdSessionInfo>()
             sessionRequestChannel.send(sessionDeferred)
             sessionDeferred.await().use { sessionInfo ->
-                async(webDriverExecutionContext) {
+                GlobalScope.async(webDriverExecutionContext) {
                     block(sessionInfo.correspondingWdRemoteEnd.webDriverCommandExecutor, sessionInfo.session)
                 }.await()
             }
