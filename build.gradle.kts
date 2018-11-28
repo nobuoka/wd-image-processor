@@ -28,8 +28,6 @@ application {
 allprojects {
     repositories {
         jcenter()
-        maven { url = URI("http://dl.bintray.com/kotlin/ktor") }
-        maven { url = URI("https://dl.bintray.com/kotlin/kotlinx") }
     }
 }
 
