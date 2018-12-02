@@ -27,6 +27,7 @@ dependencies {
     val kotlinxCoroutinesVersion = "0.25.0"
     val klaxonVersion = "2.1.4"
     val junitJupiterVersion = "5.2.0"
+    val okHttpVersion = "3.9.1"
 
     implementation(project(":modules:wd"))
 
@@ -39,4 +40,5 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 
     testImplementation(project(":modules:wd-okhttp"))
+    testImplementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
 }
