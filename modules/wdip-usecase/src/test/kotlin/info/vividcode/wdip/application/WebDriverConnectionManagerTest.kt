@@ -3,8 +3,9 @@ package info.vividcode.wdip.application
 import info.vividcode.wd.Timeouts
 import info.vividcode.wd.http.implementation.OkHttpWebDriverCommandHttpRequestDispatcher
 import info.vividcode.wdip.test.WebDriverRemoteEndArranger
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.Rule
@@ -38,20 +39,20 @@ internal class WebDriverConnectionManagerTest {
                 setOf(baseUrl), 1, timeouts
         )
 
+        val arrange = GlobalScope.async {
+            val testSessionId = UUID.fromString("552c06c2-bfc7-43c3-b7dd-9eda5c05a771")
+            webDriverRemoteEndArranger.expectNewSessionCommand(testSessionId)
+            webDriverRemoteEndArranger.expectSetTimeoutsCommand(testSessionId)
+            webDriverRemoteEndArranger.expectDeleteSessionCommand(testSessionId)
+        }
+
+        val act = GlobalScope.async {
+            webDriverConnectionManager.withSession {
+                // Do nothing
+            }
+        }
+
         runBlocking {
-            val arrange = async {
-                val testSessionId = UUID.fromString("552c06c2-bfc7-43c3-b7dd-9eda5c05a771")
-                webDriverRemoteEndArranger.expectNewSessionCommand(testSessionId)
-                webDriverRemoteEndArranger.expectSetTimeoutsCommand(testSessionId)
-                webDriverRemoteEndArranger.expectDeleteSessionCommand(testSessionId)
-            }
-
-            val act = async {
-                webDriverConnectionManager.withSession {
-                    // Do nothing
-                }
-            }
-
             arrange.await()
             act.await()
         }

@@ -11,13 +11,13 @@ import info.vividcode.wdip.ktor.getAndHead
 import info.vividcode.wdip.ktor.routeGetAndHead
 import io.ktor.application.*
 import io.ktor.http.HttpStatusCode
-import io.ktor.pipeline.PipelineInterceptor
 import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
+import io.ktor.util.pipeline.PipelineInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import java.nio.file.Paths

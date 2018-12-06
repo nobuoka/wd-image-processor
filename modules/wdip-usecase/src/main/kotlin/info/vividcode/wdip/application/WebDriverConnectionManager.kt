@@ -3,11 +3,11 @@ package info.vividcode.wdip.application
 import info.vividcode.wd.*
 import info.vividcode.wd.http.WebDriverCommandExecutor
 import info.vividcode.wd.http.WebDriverCommandHttpRequestDispatcher
-import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.selects.select
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.selects.select
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 class WebDriverConnectionManager(
         webDriverCommandHttpRequestDispatcherFactory: WebDriverCommandHttpRequestDispatcher.Factory,
@@ -44,7 +44,7 @@ class WebDriverConnectionManager(
 
     suspend fun checkAllWebDriverRemoteEndsAvailable(): List<Boolean> =
         wdRemoteEndManagingActorMap.values.map {
-            async(webDriverManagerContext) { it.checkWebDriverRemoteEndAvailable() }
+            GlobalScope.async(webDriverManagerContext) { it.checkWebDriverRemoteEndAvailable() }
         }.map {
             try {
                 it.await()
@@ -57,7 +57,7 @@ class WebDriverConnectionManager(
 
     suspend fun checkWebDriverRemoteEndAvailable(url: String): Boolean? {
         val v = wdRemoteEndManagingActorMap[url] ?: return null
-        val r = async(webDriverManagerContext) { v.checkWebDriverRemoteEndAvailable() }
+        val r = GlobalScope.async(webDriverManagerContext) { v.checkWebDriverRemoteEndAvailable() }
         return try {
             r.await()
         } catch (rawException: Exception) {
@@ -72,7 +72,7 @@ class WebDriverConnectionManager(
             val sessionDeferred = CompletableDeferred<WdSessionInfo>()
             sessionRequestChannel.send(sessionDeferred)
             sessionDeferred.await().use { sessionInfo ->
-                async(webDriverExecutionContext) {
+                GlobalScope.async(webDriverExecutionContext) {
                     block(sessionInfo.correspondingWdRemoteEnd.webDriverCommandExecutor, sessionInfo.session)
                 }.await()
             }
@@ -96,7 +96,7 @@ class WebDriverConnectionManager(
             }
 
         fun start(managerContext: CoroutineContext) {
-            val job = launch(managerContext) {
+            val job = GlobalScope.launch(managerContext) {
                 while (true) {
                     if (wdRemoteEnd.canPublishSession()) {
                         select {
@@ -173,7 +173,7 @@ class WebDriverConnectionManager(
                 session = sessionsIdle.first()
                 sessionsIdle.remove(session)
             } else {
-                val wdSession = async(webDriverExecutionContext) {
+                val wdSession = GlobalScope.async(webDriverExecutionContext) {
                     with(webDriverCommandExecutor) {
                         WebDriverCommand.NewSession().execute().also { wdSession ->
                             WebDriverCommand.SetTimeouts(wdSession, timeouts).execute()
@@ -193,7 +193,7 @@ class WebDriverConnectionManager(
             }
 
             if (sessionInfo.numUsed >= maxNumSessionUsed  || forceRelease) {
-                async(webDriverExecutionContext) {
+                GlobalScope.async(webDriverExecutionContext) {
                     with(webDriverCommandExecutor) {
                         WebDriverCommand.DeleteSession(sessionInfo.session).execute()
                     }
