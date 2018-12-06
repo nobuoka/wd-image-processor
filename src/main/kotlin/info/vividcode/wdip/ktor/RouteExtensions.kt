@@ -2,12 +2,12 @@ package info.vividcode.wdip.ktor
 
 import io.ktor.application.ApplicationCall
 import io.ktor.http.HttpMethod
-import io.ktor.pipeline.ContextDsl
-import io.ktor.pipeline.PipelineInterceptor
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.head
 import io.ktor.routing.route
+import io.ktor.util.pipeline.ContextDsl
+import io.ktor.util.pipeline.PipelineInterceptor
 
 @ContextDsl
 fun Route.getAndHead(path: String, body: PipelineInterceptor<Unit, ApplicationCall>) {

@@ -1,7 +1,7 @@
 package info.vividcode.wdip.application
 
-import kotlinx.coroutines.experimental.CompletableDeferred
-import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.channels.Channel
 import java.util.concurrent.atomic.AtomicInteger
 
 class RequestQueue<T, R> {

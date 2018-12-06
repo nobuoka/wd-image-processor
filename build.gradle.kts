@@ -12,7 +12,7 @@ buildscript {
 
 plugins {
     application
-    kotlin("jvm") version "1.2.71"
+    kotlin("jvm") version "1.3.0"
     id("org.ajoberstar.grgit") version "3.0.0-rc.2"
 }
 apply { plugin("jacoco") }
@@ -28,14 +28,12 @@ application {
 allprojects {
     repositories {
         jcenter()
-        maven { url = URI("http://dl.bintray.com/kotlin/ktor") }
-        maven { url = URI("https://dl.bintray.com/kotlin/kotlinx") }
     }
 }
 
 dependencies {
     val okHttpVersion = "3.9.1"
-    val ktorVersion = "0.9.5"
+    val ktorVersion = "1.0.0"
     val junitJupiterVersion = "5.2.0"
 
     implementation(project(":modules:wd"))

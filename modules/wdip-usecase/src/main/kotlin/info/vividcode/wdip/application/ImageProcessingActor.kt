@@ -1,6 +1,6 @@
 package info.vividcode.wdip.application
 
-import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -18,7 +18,7 @@ class ImageProcessingActor() {
         job = createJob(queue)
     }
 
-    private fun createJob(queue: RequestQueue<String, String>): Job = launch {
+    private fun createJob(queue: RequestQueue<String, String>): Job = GlobalScope.launch {
         try {
             while (!cancelRequested.get()) {
                 queue.receiveImageProcessingRequest() {
@@ -37,11 +37,11 @@ class ImageProcessingActor() {
             cancelRequested.set(true)
             job
         }
-        return async<Unit> { j?.join() }
+        return GlobalScope.async<Unit> { j?.join() }
     }
 
     private suspend fun handleRequest(request: String): String {
-        delay(4, TimeUnit.SECONDS)
+        delay(TimeUnit.SECONDS.toMillis(4))
         return "OK! [$request]"
     }
 

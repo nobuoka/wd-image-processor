@@ -5,10 +5,10 @@ import info.vividcode.wdip.application.WdImageProcessingExecutor
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
-import io.ktor.pipeline.PipelineContext
-import io.ktor.pipeline.PipelineInterceptor
 import io.ktor.response.header
 import io.ktor.response.respond
+import io.ktor.util.pipeline.PipelineContext
+import io.ktor.util.pipeline.PipelineInterceptor
 
 interface PipelineInterceptorBase {
     suspend fun PipelineContext<Unit, ApplicationCall>.intercept()
