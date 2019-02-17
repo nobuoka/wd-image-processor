@@ -1,11 +1,8 @@
 package info.vividcode.wd.http
 
-import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import info.vividcode.wd.*
 import info.vividcode.wd.WebDriverCommandExecutor
-import java.math.BigDecimal
-import java.math.BigInteger
 import java.util.*
 
 class WebDriverCommandExecutor(
@@ -73,52 +70,15 @@ class WebDriverCommandExecutor(
     override fun WebDriverCommand.ExecuteAsyncScript.execute() =
         dispatcher.dispatch(
             WebDriverCommandHttpRequest(
-                "POST", "/session/$sessionPathSegment/execute/async", JsonObject(
-                    mapOf(
-                        // From https://github.com/manakai/perl-web-driver-client/blob/master/lib/Web/Driver/Client/Session.pm#L103
-                        "script" to """
-                    var code = new Function(arguments[0]);
-                    var args = arguments[1];
-                    var callback = arguments[2];
-                    Promise.resolve().then(function () {
-                      return code.apply(null, args);
-                    }).then(function (r) {
-                      callback([true, r]);
-                    }, function (e) {
-                      callback([false, e + ""]);
-                    });
-                    """,
-                        "args" to JsonArray(
-                            script.script,
-                            JsonArray(script.args ?: emptyList())
-                        )
-                    )
-                ).toJsonString()
+                "POST", "/session/$sessionPathSegment/execute/async",
+                    ExecuteAsyncScriptCommandContentConverter.createRequestJson(script).toJsonString()
             )
         ) {
-            (it.array<Any?>("value") ?: throw RuntimeException(
-                    "The `value` field of response of Execute Async Script command is not array. (response : $it)"
-            )).let {
-                when (it[0]) {
-                    true -> it[1].let {
-                        when (it) {
-                        // Possible types : https://github.com/cbeust/klaxon#low-level-api
-                            is Int -> ScriptResult.Number(BigDecimal(it))
-                            is Long -> ScriptResult.Number(BigDecimal(it))
-                            is BigInteger -> ScriptResult.Number(BigDecimal(it))
-                            is Double -> ScriptResult.Number(BigDecimal(it))
-                            is String -> ScriptResult.String(it)
-                            is Boolean -> ScriptResult.Boolean(it)
-                            is JsonObject -> ScriptResult.Object(it)
-                            is JsonArray<*> -> ScriptResult.Array(it)
-                            null -> ScriptResult.Null
-                            else -> throw RuntimeException(
-                                    "Execute Async Script command returns success, but data type is unexpected (data : $it)"
-                            )
-                        }
-                    }
-                    false -> throw RuntimeException("Script error on Execute Async Script command (error : ${it[1]})")
-                    else -> throw RuntimeException("Unexpected result value from Execute Async Script command (value : $it)")
+            return@dispatch ExecuteAsyncScriptCommandContentConverter.parseResponseJson(it).let { jsResult ->
+                when (jsResult) {
+                    is ExecuteAsyncScriptCommandContentConverter.JavaScriptResult.Success -> jsResult.value
+                    is ExecuteAsyncScriptCommandContentConverter.JavaScriptResult.Error ->
+                        throw RuntimeException("Script error on Execute Async Script command (error : ${jsResult.message})")
                 }
             }
         }
