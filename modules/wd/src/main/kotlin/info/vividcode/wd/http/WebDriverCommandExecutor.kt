@@ -96,7 +96,9 @@ class WebDriverCommandExecutor(
                 ).toJsonString()
             )
         ) {
-            (it.array<Any?>("value") ?: throw RuntimeException("$it")).let {
+            (it.array<Any?>("value") ?: throw RuntimeException(
+                    "The `value` field of response of Execute Async Script command is not array. (response : $it)"
+            )).let {
                 when (it[0]) {
                     true -> it[1].let {
                         when (it) {
@@ -110,11 +112,13 @@ class WebDriverCommandExecutor(
                             is JsonObject -> ScriptResult.Object(it)
                             is JsonArray<*> -> ScriptResult.Array(it)
                             null -> ScriptResult.Null
-                            else -> throw RuntimeException("")
+                            else -> throw RuntimeException(
+                                    "Execute Async Script command returns success, but data type is unexpected (data : $it)"
+                            )
                         }
                     }
-                    false -> throw RuntimeException("${it[1]}")
-                    else -> throw RuntimeException("$it")
+                    false -> throw RuntimeException("Script error on Execute Async Script command (error : ${it[1]})")
+                    else -> throw RuntimeException("Unexpected result value from Execute Async Script command (value : $it)")
                 }
             }
         }
