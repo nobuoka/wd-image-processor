@@ -190,6 +190,28 @@ internal class WebDriverCommandExecutorTest {
         )
     }
 
+    @Test
+    internal fun executeAsyncScriptCommand_error() {
+        val url = mockWebServerResourceExtension.mockWebServerUrl
+        val dispatcher = OkHttpWebDriverCommandHttpRequestDispatcher(OkHttpClient.Builder().build(), url)
+        val testTarget = WebDriverCommandExecutor(dispatcher)
+
+        mockWebServerResourceExtension.mockWebServer.enqueue(
+                createSuccessTestResponseWithValueJsonString("[false, \"Test error message\"]")
+        )
+
+        val testSession = createWebDriverSession(testSessionId)
+
+        try {
+            with(testTarget) {
+                WebDriverCommand.ExecuteAsyncScript(testSession, Script("return [arguments[0]];", listOf(1))).execute()
+            }
+            Assertions.fail<Any>("Exception must be thrown.")
+        } catch (e: RuntimeException) {
+            Assertions.assertEquals("Script error on Execute Async Script command (error : Test error message)", e.message)
+        }
+    }
+
     /**
      * See : [WebDriver - 19.2 Take Element Screenshot](https://www.w3.org/TR/webdriver/#dfn-take-element-screenshot)
      *
