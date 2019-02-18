@@ -30,6 +30,7 @@ dependencies {
     val okHttpVersion = "3.9.1"
 
     implementation(project(":modules:wd"))
+    implementation(project(":modules:wd-session-pool"))
 
     implementation(kotlin("stdlib-jdk8"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion")

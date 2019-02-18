@@ -1,4 +1,4 @@
-package info.vividcode.wdip.application
+package info.vividcode.wd.pool
 
 import info.vividcode.wd.*
 import info.vividcode.wd.http.WebDriverCommandExecutor
@@ -20,7 +20,7 @@ class WebDriverConnectionManager(
 
     private val webDriverManagerContext: CoroutineContext = newSingleThreadContext("WebDriverManagerContext")
     private val webDriverExecutionContext: CoroutineContext =
-        newFixedThreadPoolContext(webDriverBaseUrls.size, "WebDriverConnectionContext")
+            newFixedThreadPoolContext(webDriverBaseUrls.size, "WebDriverConnectionContext")
 
     private val sessionRequestChannel = Channel<CompletableDeferred<WdSessionInfo>>(100)
 
@@ -68,15 +68,15 @@ class WebDriverConnectionManager(
     }
 
     suspend fun <T> withSession(block: info.vividcode.wd.WebDriverCommandExecutor.(session: WebDriverSession) -> T): T =
-        withContext(webDriverManagerContext) {
-            val sessionDeferred = CompletableDeferred<WdSessionInfo>()
-            sessionRequestChannel.send(sessionDeferred)
-            sessionDeferred.await().use { sessionInfo ->
-                GlobalScope.async(webDriverExecutionContext) {
-                    block(sessionInfo.correspondingWdRemoteEnd.webDriverCommandExecutor, sessionInfo.session)
-                }.await()
+            withContext(webDriverManagerContext) {
+                val sessionDeferred = CompletableDeferred<WdSessionInfo>()
+                sessionRequestChannel.send(sessionDeferred)
+                sessionDeferred.await().use { sessionInfo ->
+                    GlobalScope.async(webDriverExecutionContext) {
+                        block(sessionInfo.correspondingWdRemoteEnd.webDriverCommandExecutor, sessionInfo.session)
+                    }.await()
+                }
             }
-        }
 
     private class WdRemoteEndManagingActor(
             private val sessionRequestChannel: Channel<CompletableDeferred<WdSessionInfo>>,

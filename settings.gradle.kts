@@ -1,4 +1,6 @@
 include(":modules:test-utils")
 include(":modules:wd")
+include(":modules:wd-session-pool")
 include(":modules:wd-okhttp")
+include(":modules:wd-test")
 include(":modules:wdip-usecase")
