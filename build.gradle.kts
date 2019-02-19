@@ -1,8 +1,7 @@
+import info.vividcode.wd.gradle.Versions
 import org.ajoberstar.grgit.Grgit
-import org.ajoberstar.grgit.gradle.GrgitPlugin
 import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.net.URI
 
 buildscript {
     repositories {
@@ -19,6 +18,10 @@ apply { plugin("jacoco") }
 
 group = "info.vividcode.example"
 version = "1.0-SNAPSHOT"
+
+val versions = Versions(
+        klaxon = "5.0.5"
+).also { rootProject.extensions.add("versions", it) }
 
 application {
     applicationName = "wdip"

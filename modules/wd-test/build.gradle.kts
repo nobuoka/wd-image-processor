@@ -1,13 +1,15 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import info.vividcode.wd.gradle.Versions
 
 plugins {
     kotlin("jvm")
     `java-library`
 }
 
+val versions: Versions by rootProject.extensions
+
 dependencies {
     val kotlinxCoroutinesVersion = "1.0.0"
-    val klaxonVersion = "2.1.4"
     val okHttpVersion = "3.9.1"
 
     implementation(kotlin("stdlib-jdk8"))
@@ -15,7 +17,7 @@ dependencies {
 
     implementation(project(":modules:wd"))
 
-    implementation("com.beust:klaxon:$klaxonVersion")
+    implementation("com.beust:klaxon:${versions.klaxon}")
     implementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
 }
 

@@ -1,3 +1,4 @@
+import info.vividcode.wd.gradle.Versions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -10,12 +11,14 @@ jacoco {
     toolVersion = "0.8.2"
 }
 
+val versions: Versions by rootProject.extensions
+
 dependencies {
     val okHttpVersion = "3.9.1"
     val junitJupiterVersion = "5.2.0"
 
     implementation(kotlin("stdlib-jdk8"))
-    api("com.beust:klaxon:2.1.4")
+    api("com.beust:klaxon:${versions.klaxon}")
 
     // JUnit Jupiter API and TestEngine implementation
     testCompileOnly("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")

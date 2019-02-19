@@ -1,3 +1,5 @@
+
+import info.vividcode.wd.gradle.Versions
 import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -23,9 +25,10 @@ val test by tasks.existing(Test::class) {
     useJUnitPlatform()
 }
 
+val versions: Versions by rootProject.extensions
+
 dependencies {
     val kotlinxCoroutinesVersion = "1.0.0"
-    val klaxonVersion = "2.1.4"
     val junitJupiterVersion = "5.2.0"
     val okHttpVersion = "3.9.1"
 
@@ -34,7 +37,7 @@ dependencies {
 
     implementation(kotlin("stdlib-jdk8"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion")
-    implementation("com.beust:klaxon:$klaxonVersion")
+    implementation("com.beust:klaxon:${versions.klaxon}")
 
     // JUnit Jupiter API and TestEngine implementation
     testCompileOnly("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
