@@ -1,4 +1,4 @@
-package info.vividcode.wdip.test
+package info.vividcode.wd.test.server
 
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.JsonValue

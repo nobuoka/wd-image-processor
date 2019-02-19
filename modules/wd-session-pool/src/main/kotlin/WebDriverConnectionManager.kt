@@ -1,4 +1,4 @@
-package info.vividcode.wdip.application
+package info.vividcode.wd.pool
 
 import info.vividcode.wd.*
 import info.vividcode.wd.http.WebDriverCommandExecutor

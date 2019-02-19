@@ -1,5 +1,7 @@
 package info.vividcode.wdip.application
 
+import info.vividcode.wd.pool.WebDriverConnectionManager
+
 class WdImageProcessingExecutor(
     private val webDriverConnectionManager: WebDriverConnectionManager
 ) {
