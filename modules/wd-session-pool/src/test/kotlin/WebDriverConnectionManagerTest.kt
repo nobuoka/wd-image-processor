@@ -1,8 +1,8 @@
-package info.vividcode.wdip.application
+package info.vividcode.wd.pool
 
 import info.vividcode.wd.Timeouts
 import info.vividcode.wd.http.implementation.OkHttpWebDriverCommandHttpRequestDispatcher
-import info.vividcode.wdip.test.WebDriverRemoteEndArranger
+import info.vividcode.wd.test.server.WebDriverRemoteEndArranger
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking

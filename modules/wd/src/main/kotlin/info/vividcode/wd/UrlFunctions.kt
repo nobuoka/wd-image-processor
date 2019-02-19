@@ -1,4 +1,4 @@
-package info.vividcode.wdip.application
+package info.vividcode.wd
 
 import java.nio.charset.StandardCharsets
 import java.util.*
