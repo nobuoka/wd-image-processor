@@ -18,7 +18,7 @@ jobs:
           key: gradle-{{ checksum "~/cache-key-source-gradle" }}
       - run:
           name: Build App
-          command: ./gradlew --no-daemon build installDist
+          command: ./gradlew --no-daemon build jacocoTestReport installDist
       - run:
           name: Report code coverage
           command: |
