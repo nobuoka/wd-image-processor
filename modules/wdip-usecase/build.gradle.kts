@@ -39,6 +39,8 @@ dependencies {
     // JUnit Jupiter API and TestEngine implementation
     testCompileOnly("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
+
+    testImplementation("commons-codec:commons-codec:1.12")
 }
 
 val jacocoTestReport by tasks.existing(JacocoReport::class) {
