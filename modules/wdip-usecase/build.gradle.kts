@@ -40,3 +40,11 @@ dependencies {
     testCompileOnly("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 }
+
+val jacocoTestReport by tasks.existing(JacocoReport::class) {
+    reports {
+        xml.isEnabled = true
+        xml.destination = file("$buildDir/reports/jacoco/report.xml")
+        html.destination = file("$buildDir/reports/jacoco/html")
+    }
+}

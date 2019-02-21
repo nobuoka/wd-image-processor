@@ -34,3 +34,11 @@ tasks.withType<KotlinCompile> {
 val test = tasks.withType(Test::class.java)["test"]!!.apply {
     useJUnitPlatform()
 }
+
+val jacocoTestReport by tasks.existing(JacocoReport::class) {
+    reports {
+        xml.isEnabled = true
+        xml.destination = file("$buildDir/reports/jacoco/report.xml")
+        html.destination = file("$buildDir/reports/jacoco/html")
+    }
+}
