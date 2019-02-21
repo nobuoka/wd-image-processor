@@ -15,10 +15,12 @@ internal class OkHttpWebDriverCommandHttpRequestDispatcherTest {
     @RegisterExtension
     internal val mockWebServerResourceExtension = MockWebServerResourceExtension()
 
+    private val factory = OkHttpWebDriverCommandHttpRequestDispatcher.Factory(OkHttpClient.Builder().build())
+
     @Test
     internal fun dispatch_successfulResponse_responseContentJson_object() {
         val url = mockWebServerResourceExtension.mockWebServerUrl
-        val testTarget = OkHttpWebDriverCommandHttpRequestDispatcher(OkHttpClient.Builder().build(), url)
+        val testTarget = factory.create(url)
 
         mockWebServerResourceExtension.mockWebServer.enqueue(
                 MockResponse()
@@ -37,7 +39,7 @@ internal class OkHttpWebDriverCommandHttpRequestDispatcherTest {
     @Test
     internal fun dispatch_successfulResponse_responseContentJson_notObject() {
         val baseUrl = mockWebServerResourceExtension.mockWebServerUrl
-        val testTarget = OkHttpWebDriverCommandHttpRequestDispatcher(OkHttpClient.Builder().build(), baseUrl)
+        val testTarget = factory.create(baseUrl)
 
         mockWebServerResourceExtension.mockWebServer.enqueue(
                 MockResponse()
@@ -61,7 +63,7 @@ internal class OkHttpWebDriverCommandHttpRequestDispatcherTest {
     @Test
     internal fun dispatch_successfulResponse_responseContentNotJson() {
         val url = mockWebServerResourceExtension.mockWebServerUrl
-        val testTarget = OkHttpWebDriverCommandHttpRequestDispatcher(OkHttpClient.Builder().build(), url)
+        val testTarget = factory.create(url)
 
         mockWebServerResourceExtension.mockWebServer.enqueue(
                 MockResponse()
@@ -82,7 +84,7 @@ internal class OkHttpWebDriverCommandHttpRequestDispatcherTest {
     @Test
     internal fun dispatch_errorResponse() {
         val url = mockWebServerResourceExtension.mockWebServerUrl
-        val testTarget = OkHttpWebDriverCommandHttpRequestDispatcher(OkHttpClient.Builder().build(), url)
+        val testTarget = factory.create(url)
 
         mockWebServerResourceExtension.mockWebServer.enqueue(
                 MockResponse()
