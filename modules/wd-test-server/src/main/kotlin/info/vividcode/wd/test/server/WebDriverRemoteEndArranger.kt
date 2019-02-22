@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 class WebDriverRemoteEndArranger(private val server: MockWebServer) {
 
     fun expectNewSessionCommand(testSessionId: UUID) {
-        val request = requireNotNull(server.takeRequest(100, TimeUnit.MILLISECONDS))
+        val request = requireNotNull(server.takeRequest(1000, TimeUnit.MILLISECONDS))
         MatcherAssert.assertThat(request.method, CoreMatchers.equalTo("POST"))
         MatcherAssert.assertThat(request.path, CoreMatchers.equalTo("/session"))
 
@@ -21,7 +21,7 @@ class WebDriverRemoteEndArranger(private val server: MockWebServer) {
     }
 
     fun expectDeleteSessionCommand(testSessionId: UUID) {
-        val request = requireNotNull(server.takeRequest(100, TimeUnit.MILLISECONDS))
+        val request = requireNotNull(server.takeRequest(1000, TimeUnit.MILLISECONDS))
         MatcherAssert.assertThat(request.method, CoreMatchers.equalTo("DELETE"))
         MatcherAssert.assertThat(request.path, CoreMatchers.equalTo("/session/$testSessionId"))
 
@@ -29,7 +29,7 @@ class WebDriverRemoteEndArranger(private val server: MockWebServer) {
     }
 
     fun expectSetTimeoutsCommand(testSessionId: UUID) {
-        val request = requireNotNull(server.takeRequest(100, TimeUnit.MILLISECONDS))
+        val request = requireNotNull(server.takeRequest(1000, TimeUnit.MILLISECONDS))
         MatcherAssert.assertThat(request.method, CoreMatchers.equalTo("POST"))
         MatcherAssert.assertThat(request.path, CoreMatchers.equalTo("/session/$testSessionId/timeouts"))
 
