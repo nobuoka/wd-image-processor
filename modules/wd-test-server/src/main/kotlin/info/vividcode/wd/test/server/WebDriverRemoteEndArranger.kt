@@ -1,7 +1,5 @@
 package info.vividcode.wd.test.server
 
-import com.beust.klaxon.JsonObject
-import com.beust.klaxon.JsonValue
 import okhttp3.Headers
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -10,6 +8,7 @@ import org.hamcrest.MatcherAssert
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.json.Json
+import javax.json.JsonValue
 
 class WebDriverRemoteEndArranger(private val server: MockWebServer) {
 
@@ -56,18 +55,6 @@ class WebDriverRemoteEndArranger(private val server: MockWebServer) {
     /**
      * [Create a response to send](https://www.w3.org/TR/webdriver/#dfn-send-a-response).
      */
-    private fun createResponse(status: Int, data: JsonValue?) =
-            createResponseInternal(status, JsonObject(mapOf("value" to data)).toJsonString())
-
-    /**
-     * [Create a response to send](https://www.w3.org/TR/webdriver/#dfn-send-a-response).
-     */
-    private fun createResponse(status: Int, data: JsonObject) =
-            createResponseInternal(status, JsonObject(mapOf("value" to data)).toJsonString())
-
-    /**
-     * [Create a response to send](https://www.w3.org/TR/webdriver/#dfn-send-a-response).
-     */
     private fun createResponse(status: Int, data: javax.json.JsonValue) =
             createResponseInternal(status, Json.createObjectBuilder().add("value", data).build().toString())
 
@@ -86,17 +73,20 @@ class WebDriverRemoteEndArranger(private val server: MockWebServer) {
     /**
      * [New Session command](https://www.w3.org/TR/webdriver/#new-session).
      */
-    private fun createNewSessionCommandResponseJson(sessionId: UUID): JsonObject =
-            JsonObject(mapOf("sessionId" to sessionId.toString(), "capabilities" to JsonObject()))
+    private fun createNewSessionCommandResponseJson(sessionId: UUID): JsonValue =
+            Json.createObjectBuilder()
+                    .add("sessionId", sessionId.toString())
+                    .add("capabilities", JsonValue.EMPTY_JSON_OBJECT)
+                    .build()
 
     /**
      * [Delete Session command](https://www.w3.org/TR/webdriver/#dfn-delete-session).
      */
-    private fun createDeleteSessionCommandResponseJson(): JsonValue? = null
+    private fun createDeleteSessionCommandResponseJson(): JsonValue = JsonValue.NULL
 
     /**
      * [New Session command](https://www.w3.org/TR/webdriver/#new-session).
      */
-    private fun createSetTimeoutsCommandResponseJson(): JsonValue? = null
+    private fun createSetTimeoutsCommandResponseJson(): JsonValue = JsonValue.NULL
 
 }
