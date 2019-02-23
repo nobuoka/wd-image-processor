@@ -25,7 +25,7 @@ val test by tasks.existing(Test::class) {
 
 dependencies {
     val kotlinxCoroutinesVersion = "1.0.0"
-    val klaxonVersion = "2.1.4"
+    val klaxonVersion = "2.1.9"
     val junitJupiterVersion = "5.2.0"
     val okHttpVersion = "3.9.1"
 

@@ -15,7 +15,7 @@ dependencies {
     val junitJupiterVersion = "5.2.0"
 
     implementation(kotlin("stdlib-jdk8"))
-    api("com.beust:klaxon:2.1.4")
+    api("com.beust:klaxon:2.1.9")
 
     // JUnit Jupiter API and TestEngine implementation
     testCompileOnly("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
