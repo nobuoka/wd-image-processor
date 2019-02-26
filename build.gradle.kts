@@ -57,10 +57,6 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-kotlin {
-    experimental.coroutines = Coroutines.ENABLE
-}
-
 configure<JacocoPluginExtension> {
     toolVersion = "0.8.2"
 }
