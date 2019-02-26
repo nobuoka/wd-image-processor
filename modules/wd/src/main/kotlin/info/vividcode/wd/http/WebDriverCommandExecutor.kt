@@ -1,9 +1,11 @@
 package info.vividcode.wd.http
 
-import com.beust.klaxon.JsonObject
 import info.vividcode.wd.*
 import info.vividcode.wd.WebDriverCommandExecutor
 import java.util.*
+import javax.json.Json
+import javax.json.JsonString
+import javax.json.JsonValue
 
 class WebDriverCommandExecutor(
         private val dispatcher: WebDriverCommandHttpRequestDispatcher
@@ -17,17 +19,19 @@ class WebDriverCommandExecutor(
     override fun WebDriverCommand.NewSession.execute(): WebDriverSession =
         dispatcher.dispatch(
             WebDriverCommandHttpRequest(
-                "POST", "/session", JsonObject(
-                    mapOf("desiredCapabilities" to JsonObject(mapOf()))
-                ).toJsonString()
+                "POST", "/session", Json.createObjectBuilder(
+                    mapOf("desiredCapabilities" to mapOf<String, Any?>())
+                ).build().toString()
             )
-        ) {
-            val sessionId =
-                it.obj("value")?.string("sessionId") ?:
-                it.string("sessionId") ?:
-                throw RuntimeException("Unexpected response content (sessionId not found): $it")
-            OkHttpWebDriverSession(sessionId)
+        ) { jsonObject ->
+            val sessionIdJsonString =
+                jsonObject["value"]?.asJsonObjectOrNull()?.let { it["sessionId"] as? JsonString } ?:
+                jsonObject["sessionId"] as? JsonString ?:
+                throw RuntimeException("Unexpected response content (sessionId not found): $jsonObject")
+            OkHttpWebDriverSession(sessionIdJsonString.string)
         }
+
+    private fun JsonValue.asJsonObjectOrNull() = if (this.valueType == JsonValue.ValueType.OBJECT) this.asJsonObject() else null
 
     override fun WebDriverCommand.DeleteSession.execute() =
         dispatcher.dispatch(
@@ -37,12 +41,12 @@ class WebDriverCommandExecutor(
     override fun WebDriverCommand.SetWindowRect.execute() =
         dispatcher.dispatch(
             WebDriverCommandHttpRequest(
-                "POST", "/session/$sessionPathSegment/window/rect", JsonObject(
+                "POST", "/session/$sessionPathSegment/window/rect", Json.createObjectBuilder(
                     mapOf(
                         "height" to rect.height + 105,
                         "width" to rect.width
                     )
-                ).toJsonString()
+                ).build().toString()
             )
         ) {}
 
@@ -50,11 +54,11 @@ class WebDriverCommandExecutor(
             dispatcher.dispatch(
                     WebDriverCommandHttpRequest(
                             "POST", "/session/$sessionPathSegment/timeouts",
-                            JsonObject(mapOf(
+                            Json.createObjectBuilder(mapOf(
                                     "script" to timeouts.scriptTimeoutInMs,
                                     "pageLoad" to timeouts.pageLoadTimeoutInMs,
                                     "implicit" to timeouts.implicitTimeoutInMs
-                            )).toJsonString()
+                            )).build().toString()
                     )
             ) {}
 
@@ -63,7 +67,7 @@ class WebDriverCommandExecutor(
             WebDriverCommandHttpRequest(
                 "POST",
                 "/session/$sessionPathSegment/url",
-                JsonObject(mapOf("url" to url)).toJsonString()
+                Json.createObjectBuilder(mapOf("url" to url)).build().toString()
             )
         ) {}
 
@@ -71,10 +75,10 @@ class WebDriverCommandExecutor(
         dispatcher.dispatch(
             WebDriverCommandHttpRequest(
                 "POST", "/session/$sessionPathSegment/execute/async",
-                    ExecuteAsyncScriptCommandContentConverter.createRequestJson(script).toJsonString()
+                    ExecuteAsyncScriptCommandContentConverter.createRequestJson(script).toString()
             )
-        ) {
-            return@dispatch ExecuteAsyncScriptCommandContentConverter.parseResponseJson(it).let { jsResult ->
+        ) { jsonObject ->
+            return@dispatch ExecuteAsyncScriptCommandContentConverter.parseResponseJson(jsonObject).let { jsResult ->
                 when (jsResult) {
                     is ExecuteAsyncScriptCommandContentConverter.JavaScriptResult.Success -> jsResult.value
                     is ExecuteAsyncScriptCommandContentConverter.JavaScriptResult.Error ->
@@ -91,7 +95,7 @@ class WebDriverCommandExecutor(
                 null
             )
         ) {
-            val screenshotBase64 = it.string("value")
+            val screenshotBase64 = it.getString("value")
             Base64.getDecoder().decode(screenshotBase64)
         }
 
@@ -99,14 +103,14 @@ class WebDriverCommandExecutor(
         dispatcher.dispatch(
             WebDriverCommandHttpRequest("GET", "/session/$sessionPathSegment/screenshot", null)
         ) {
-            val screenshotBase64 = it.string("value")
+            val screenshotBase64 = it.getString("value")
             Base64.getDecoder().decode(screenshotBase64)
         }
 
     override fun WebDriverCommand.FindElement.execute(): WebElement =
         dispatcher.dispatch(
             WebDriverCommandHttpRequest(
-                "POST", "/session/$sessionPathSegment/element", JsonObject(
+                "POST", "/session/$sessionPathSegment/element", Json.createObjectBuilder(
                     mapOf(
                         "using" to when (selector.strategy) {
                         //ElementSelector.Strategy.CSS -> "css" // "css selector"
@@ -114,10 +118,10 @@ class WebDriverCommandExecutor(
                         },
                         "value" to selector.value
                     )
-                ).toJsonString()
+                ).build().toString()
             )
         ) {
-            (it.obj("value") ?: throw RuntimeException("$it")).let(WebElement.Companion::from)
+            (it.getJsonObject("value") ?: throw RuntimeException("$it")).let(WebElement.Companion::from)
         }
 
 }

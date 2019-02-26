@@ -1,15 +1,12 @@
 package info.vividcode.wd.http
 
-import com.beust.klaxon.JsonArray
-import com.beust.klaxon.JsonObject
 import info.vividcode.wd.Script
 import info.vividcode.wd.ScriptResult
-import java.math.BigDecimal
-import java.math.BigInteger
+import javax.json.*
 
 internal object ExecuteAsyncScriptCommandContentConverter {
 
-    fun createRequestJson(script: Script): JsonObject = JsonObject(
+    fun createRequestJson(script: Script): JsonObject = Json.createObjectBuilder(
             mapOf(
                     // From https://github.com/manakai/perl-web-driver-client/blob/master/lib/Web/Driver/Client/Session.pm#L103
                     "script" to """
@@ -24,53 +21,56 @@ internal object ExecuteAsyncScriptCommandContentConverter {
                       callback([false, e + ""]);
                     });
                     """,
-                    "args" to JsonArray(
+                    "args" to listOf(
                             script.script,
-                            JsonArray(script.args ?: emptyList())
+                            script.args ?: emptyList<Any?>()
                     )
             )
-    )
+    ).build()
 
     fun parseResponseJson(responseJson: JsonObject): JavaScriptResult =
             responseJson["value"].let { value ->
-                if (value is JsonArray<*>) {
+                if (value is JsonArray) {
                     value
                 } else {
                     throw UnexpectedResponseContentException(
                             "The `value` field of response of Execute Async Script command is not array. " +
-                                    "(response : ${responseJson.toJsonString()})"
+                                    "(response : $responseJson)"
                     )
                 }
             }.let { resultArray ->
                 if (resultArray.size != 2) {
                     throw UnexpectedResponseContentException(
                             "The size of `value` array of response of Execute Async Script command must contains 2 items. " +
-                                    "(value : ${resultArray.toJsonString()})"
+                                    "(value : $resultArray)"
                     )
                 }
                 when (resultArray[0]) {
-                    true ->
-                        when (val successResultValue = resultArray[1]) {
-                            // Possible types : https://github.com/cbeust/klaxon#low-level-api
-                            is Int -> ScriptResult.Number(BigDecimal(successResultValue))
-                            is Long -> ScriptResult.Number(BigDecimal(successResultValue))
-                            is BigInteger -> ScriptResult.Number(BigDecimal(successResultValue))
-                            is Double -> ScriptResult.Number(BigDecimal(successResultValue))
-                            is String -> ScriptResult.String(successResultValue)
-                            is Boolean -> ScriptResult.Boolean(successResultValue)
-                            is JsonObject -> ScriptResult.Object(successResultValue)
-                            is JsonArray<*> -> ScriptResult.Array(successResultValue)
-                            null -> ScriptResult.Null
+                    JsonValue.TRUE -> resultArray[1].let { successResultValue ->
+                        when (successResultValue.valueType!!) {
+                            JsonValue.ValueType.NUMBER -> ScriptResult.Number((successResultValue as JsonNumber).bigDecimalValue())
+                            JsonValue.ValueType.STRING -> ScriptResult.String((successResultValue as JsonString).string)
+                            JsonValue.ValueType.OBJECT -> ScriptResult.Object(successResultValue as JsonObject)
+                            JsonValue.ValueType.ARRAY -> ScriptResult.Array(successResultValue as JsonArray)
+                            JsonValue.ValueType.TRUE -> ScriptResult.Boolean(true)
+                            JsonValue.ValueType.FALSE -> ScriptResult.Boolean(false)
+                            JsonValue.ValueType.NULL -> ScriptResult.Null
+                        }.let(JavaScriptResult::Success)
+                    }
+                    JsonValue.FALSE -> {
+                        when (val errorMessageValue = resultArray[1]) {
+                            is JsonString -> JavaScriptResult.Error(errorMessageValue.string)
                             else ->
                                 throw UnexpectedResponseContentException(
-                                        "Execute Async Script command returns success, but data type is unexpected " +
-                                                "(data : $successResultValue, type of data : ${successResultValue::class.qualifiedName})"
+                                        "Execute Async Script command returns error, but error message type is unexpected " +
+                                                "(error message : $errorMessageValue," +
+                                                " type of error message : ${errorMessageValue.valueType})"
                                 )
-                        }.let(JavaScriptResult::Success)
-                    false -> JavaScriptResult.Error("${resultArray[1]}")
+                        }
+                    }
                     else ->
                         throw UnexpectedResponseContentException(
-                                "Unexpected result value from Execute Async Script command (value : ${resultArray.toJsonString()})"
+                                "Unexpected result value from Execute Async Script command (value : $resultArray)"
                         )
                 }
             }

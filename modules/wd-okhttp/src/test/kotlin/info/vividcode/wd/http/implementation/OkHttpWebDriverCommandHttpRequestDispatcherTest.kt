@@ -1,6 +1,5 @@
 package info.vividcode.wd.http.implementation
 
-import com.beust.klaxon.JsonObject
 import info.vividcode.test.utils.MockWebServerResourceExtension
 import info.vividcode.wd.http.WebDriverCommandHttpRequest
 import okhttp3.OkHttpClient
@@ -8,6 +7,7 @@ import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
+import javax.json.Json
 
 internal class OkHttpWebDriverCommandHttpRequestDispatcherTest {
 
@@ -33,7 +33,7 @@ internal class OkHttpWebDriverCommandHttpRequestDispatcherTest {
         val result = testTarget.dispatch(WebDriverCommandHttpRequest("GET", "/test", null)) { it }
 
         // Assert
-        Assertions.assertEquals(JsonObject(mapOf("test" to 100)), result)
+        Assertions.assertEquals(Json.createObjectBuilder(mapOf("test" to 100)).build(), result)
     }
 
     @Test
@@ -78,7 +78,7 @@ internal class OkHttpWebDriverCommandHttpRequestDispatcherTest {
         }
 
         // Assert
-        Assertions.assertEquals("Unexpected character at position 3: 't' (ASCII: 116)'", exception.message)
+        Assertions.assertEquals("Parsing JSON failed (response body : Test response content.)", exception.message)
     }
 
     @Test

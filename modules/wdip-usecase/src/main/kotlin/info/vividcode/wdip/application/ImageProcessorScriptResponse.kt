@@ -1,7 +1,9 @@
 package info.vividcode.wdip.application
 
-import com.beust.klaxon.JsonObject
 import info.vividcode.wd.WebElement
+import javax.json.JsonNumber
+import javax.json.JsonObject
+import javax.json.JsonString
 
 data class ImageProcessorScriptResponse(
         val content: Content,
@@ -14,20 +16,23 @@ data class ImageProcessorScriptResponse(
                 ImageProcessorScriptResponse(
                         content = run {
                             (obj?.get("content") as? JsonObject)?.let { c ->
-                                when (c.get("type") as? String) {
-                                    "text" -> Content.Text(c["value"] as? String)
+                                when ((c["type"] as? JsonString)?.string) {
+                                    "text" -> Content.Text((c["value"] as? JsonString)?.string)
                                     else -> Content.Screenshot(
                                             (c["targetElement"] as? JsonObject)?.let(WebElement.Companion::from),
-                                            if (c["imageType"] == "jpeg") Content.Screenshot.ImageType.JPEG else Content.Screenshot.ImageType.PNG
+                                            if ((c["imageType"] as? JsonString)?.string == "jpeg")
+                                                Content.Screenshot.ImageType.JPEG
+                                            else
+                                                Content.Screenshot.ImageType.PNG
                                     )
                                 }
                             } ?: Content.Screenshot(
                                     (obj?.get("targetElement") as? JsonObject)?.let(WebElement.Companion::from),
                                     Content.Screenshot.ImageType.PNG)
                         },
-                        statusCode = (obj?.get("statusCode") as? Int) ?: 200,
+                        statusCode = (obj?.get("statusCode") as? JsonNumber)?.intValue() ?: 200,
                         httpCache = (obj?.get("httpCache") as? JsonObject)?.let {
-                            HttpCache(it["maxAge"] as? Int)
+                            HttpCache((it["maxAge"] as? JsonNumber)?.intValue())
                         }
                 )
     }
