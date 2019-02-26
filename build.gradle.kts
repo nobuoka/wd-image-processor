@@ -1,8 +1,6 @@
 import org.ajoberstar.grgit.Grgit
-import org.ajoberstar.grgit.gradle.GrgitPlugin
 import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.net.URI
 
 buildscript {
     repositories {
@@ -45,6 +43,8 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:$okHttpVersion")
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
+
+    implementation("org.glassfish:javax.json:1.1.4")
 
     // JUnit Jupiter API and TestEngine implementation
     testCompile("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")

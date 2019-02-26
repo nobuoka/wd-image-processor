@@ -44,7 +44,7 @@ class WebDriverRemoteEndArranger(private val server: MockWebServer) {
         server.enqueue(createResponse(200, createDeleteSessionCommandResponseJson()))
     }
 
-    fun expectExecuteAsyncScriptCommand(testSessionId: UUID, scriptResultValue: javax.json.JsonValue) {
+    fun expectExecuteAsyncScriptCommand(testSessionId: UUID, scriptResultValue: JsonValue) {
         val request = requireNotNull(server.takeRequest(1000, TimeUnit.MILLISECONDS))
         MatcherAssert.assertThat(request.method, CoreMatchers.equalTo("POST"))
         MatcherAssert.assertThat(request.path, CoreMatchers.equalTo("/session/$testSessionId/execute/async"))
@@ -55,7 +55,7 @@ class WebDriverRemoteEndArranger(private val server: MockWebServer) {
     /**
      * [Create a response to send](https://www.w3.org/TR/webdriver/#dfn-send-a-response).
      */
-    private fun createResponse(status: Int, data: javax.json.JsonValue) =
+    private fun createResponse(status: Int, data: JsonValue) =
             createResponseInternal(status, Json.createObjectBuilder().add("value", data).build().toString())
 
     /**

@@ -15,11 +15,13 @@ dependencies {
     val junitJupiterVersion = "5.2.0"
 
     implementation(kotlin("stdlib-jdk8"))
-    api("com.beust:klaxon:2.1.9")
+    api("javax.json:javax.json-api:1.1.4")
 
     // JUnit Jupiter API and TestEngine implementation
     testCompileOnly("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
+
+    testRuntimeOnly("org.glassfish:javax.json:1.1.4")
 
     testImplementation(project(":modules:test-utils"))
     testImplementation(project(":modules:wd-okhttp"))

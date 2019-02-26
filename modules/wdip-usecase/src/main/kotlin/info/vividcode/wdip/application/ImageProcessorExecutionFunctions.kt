@@ -1,9 +1,10 @@
 package info.vividcode.wdip.application
 
-import com.beust.klaxon.JsonObject
 import info.vividcode.wd.*
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import javax.json.JsonNumber
+import javax.json.JsonObject
 
 fun WebDriverCommandExecutor.executeImageProcessorWithElementScreenshot(
         session: WebDriverSession, htmlString: String, jsString: String, jsArg: String
@@ -61,8 +62,8 @@ private val screenshotRectDefaultValue = ScreenshotRect(0, 0, 360, 360)
 
 private fun parseScreenshotRect(obj: JsonObject?, defaultValue: ScreenshotRect) =
         ScreenshotRect(
-                x = (obj?.get("x") as? Int ?: defaultValue.x),
-                y = (obj?.get("y") as? Int ?: defaultValue.y),
-                width = (obj?.get("width") as? Int ?: defaultValue.width),
-                height = (obj?.get("height") as? Int ?: defaultValue.height)
+                x = ((obj?.get("x") as? JsonNumber)?.intValue() ?: defaultValue.x),
+                y = ((obj?.get("y") as? JsonNumber)?.intValue() ?: defaultValue.y),
+                width = ((obj?.get("width") as? JsonNumber)?.intValue() ?: defaultValue.width),
+                height = ((obj?.get("height") as? JsonNumber)?.intValue() ?: defaultValue.height)
         )

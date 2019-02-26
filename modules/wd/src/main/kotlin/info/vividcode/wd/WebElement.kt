@@ -1,6 +1,6 @@
 package info.vividcode.wd
 
-import com.beust.klaxon.JsonObject
+import javax.json.JsonObject
 
 data class WebElement(val reference: String) {
     companion object {
@@ -9,10 +9,10 @@ data class WebElement(val reference: String) {
 
         fun from(obj: JsonObject): WebElement {
             val webElementReference =
-                    obj.string(IDENTIFIER) ?:
-                    obj.string(DEPRECATED_IDENTIFIER) ?:
+                    obj.getJsonString(IDENTIFIER) ?:
+                    obj.getJsonString(DEPRECATED_IDENTIFIER) ?:
                     throw RuntimeException("$obj")
-            return WebElement(webElementReference)
+            return WebElement(webElementReference.string)
         }
     }
 }
