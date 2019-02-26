@@ -27,7 +27,6 @@ dependencies {
     val kotlinxCoroutinesVersion = "1.0.0"
     val klaxonVersion = "2.1.9"
     val junitJupiterVersion = "5.2.0"
-    val okHttpVersion = "3.9.1"
 
     implementation(project(":modules:wd"))
     implementation(project(":modules:wd-session-pool"))
@@ -35,6 +34,7 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion")
     implementation("com.beust:klaxon:$klaxonVersion")
+    runtimeOnly("org.glassfish:javax.json:1.1.4")
 
     // JUnit Jupiter API and TestEngine implementation
     testCompileOnly("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")

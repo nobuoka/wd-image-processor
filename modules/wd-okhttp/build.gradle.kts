@@ -22,6 +22,8 @@ dependencies {
     testCompileOnly("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 
+    testRuntimeOnly("org.glassfish:javax.json:1.1.4")
+
     testImplementation(project(":modules:test-utils"))
 
     testImplementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
