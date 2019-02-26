@@ -7,10 +7,6 @@ plugins {
     id("jacoco")
 }
 
-kotlin {
-    experimental.coroutines = Coroutines.ENABLE
-}
-
 jacoco {
     toolVersion = "0.8.2"
 }
