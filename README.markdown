@@ -11,7 +11,7 @@ Image processing server (processed by JavaScript on WebDriver remote end)
 First, build application and run services by execute following commands.
 
 ```
-./gradlew installDist
+./gradlew :app:installDist
 docker-compose up --build
 ```
 

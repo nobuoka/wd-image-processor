@@ -1,3 +1,4 @@
+include(":app")
 include(":modules:test-utils")
 include(":modules:wd")
 include(":modules:wd-session-pool")

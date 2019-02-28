@@ -2,7 +2,7 @@ version: "3"
 services:
   app:
     image: wd-image-processor-app
-    build: .
+    build: ./app/
     links:
       - wd-server-fx1
       - wd-server-fx2
