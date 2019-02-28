@@ -34,6 +34,69 @@ internal class WebDriverConnectionManagerTest {
     }
 
     @Nested
+    internal inner class CheckAllWebDriverRemoteEndsAvailableTest {
+        @Test
+        internal fun healthy() {
+            val baseUrl = server.url("").toString().dropLast(1)
+            val timeouts = Timeouts(2000, 2000, 2000)
+            val webDriverConnectionManager = WebDriverConnectionManager(
+                    OkHttpWebDriverCommandHttpRequestDispatcher.Factory(OkHttpClient()),
+                    setOf(baseUrl), 1, timeouts
+            )
+
+            val arrange = GlobalScope.async {
+                val testSessionId = UUID.fromString("552c06c2-bfc7-43c3-b7dd-9eda5c05a771")
+                webDriverRemoteEndArranger.expectNewSessionCommand(testSessionId)
+                webDriverRemoteEndArranger.expectSetTimeoutsCommand(testSessionId)
+                webDriverRemoteEndArranger.expectGoCommand(testSessionId)
+                webDriverRemoteEndArranger.expectExecuteAsyncScriptCommand(testSessionId, Json.createValue("Health check"))
+                webDriverRemoteEndArranger.expectDeleteSessionCommand(testSessionId)
+            }
+
+            val act = GlobalScope.async {
+                webDriverConnectionManager.checkAllWebDriverRemoteEndsAvailable()
+            }
+
+            val result = runBlocking {
+                arrange.await()
+                act.await()
+            }
+
+            Assertions.assertEquals(listOf(true), result)
+        }
+
+        @Test
+        internal fun unhealthy_unexpectedScriptResult() {
+            val baseUrl = server.url("").toString().dropLast(1)
+            val timeouts = Timeouts(2000, 2000, 2000)
+            val webDriverConnectionManager = WebDriverConnectionManager(
+                    OkHttpWebDriverCommandHttpRequestDispatcher.Factory(OkHttpClient()),
+                    setOf(baseUrl), 1, timeouts
+            )
+
+            val arrange = GlobalScope.async {
+                val testSessionId = UUID.fromString("552c06c2-bfc7-43c3-b7dd-9eda5c05a771")
+                webDriverRemoteEndArranger.expectNewSessionCommand(testSessionId)
+                webDriverRemoteEndArranger.expectSetTimeoutsCommand(testSessionId)
+                webDriverRemoteEndArranger.expectGoCommand(testSessionId)
+                webDriverRemoteEndArranger.expectExecuteAsyncScriptCommand(testSessionId, Json.createValue("Unexpected"))
+                webDriverRemoteEndArranger.expectDeleteSessionCommand(testSessionId)
+            }
+
+            val act = GlobalScope.async {
+                webDriverConnectionManager.checkAllWebDriverRemoteEndsAvailable()
+            }
+
+            val result = runBlocking {
+                arrange.await()
+                act.await()
+            }
+
+            Assertions.assertEquals(listOf(false), result)
+        }
+    }
+
+    @Nested
     internal inner class CheckWebDriverRemoteEndAvailableTest {
         @Test
         internal fun healthy() {
