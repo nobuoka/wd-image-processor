@@ -31,7 +31,7 @@ jobs:
       - persist_to_workspace:
           root: ~/project
           paths:
-            - build
+            - app/build
 
   build-app-docker-image:
     docker:
@@ -46,7 +46,7 @@ jobs:
           version: 17.11.0-ce
       - run:
           name: Build Docker image
-          command: docker build -t app .
+          command: docker build -t app ./app
 
       - run: |
           docker run -it -d --rm -v /cfg --name wdip-cfg alpine:3.4 /bin/sh
