@@ -22,7 +22,7 @@ dependencies {
     testCompileOnly("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
 
-    testRuntimeOnly("org.glassfish:javax.json:1.1.4")
+    testRuntimeOnly("org.glassfish:jakarta.json:1.1.5")
 
     testImplementation(project(":modules:test-utils"))
 

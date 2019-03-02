@@ -32,7 +32,7 @@ dependencies {
     implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
 
-    implementation("org.glassfish:javax.json:1.1.4")
+    implementation("org.glassfish:jakarta.json:1.1.5")
 
     // JUnit Jupiter API and TestEngine implementation
     testCompile("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
