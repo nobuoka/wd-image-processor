@@ -28,7 +28,7 @@ dependencies {
 
     implementation(kotlin("stdlib-jdk8"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion")
-    runtimeOnly("org.glassfish:javax.json:1.1.4")
+    runtimeOnly("org.glassfish:jakarta.json:1.1.5")
 
     // JUnit Jupiter API and TestEngine implementation
     testCompileOnly("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")

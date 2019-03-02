@@ -10,7 +10,7 @@ dependencies {
 
     implementation(kotlin("stdlib-jdk8"))
 
-    implementation("org.glassfish:javax.json:1.1.4")
+    implementation("org.glassfish:jakarta.json:1.1.5")
     implementation("com.squareup.okhttp3:mockwebserver:$okHttpVersion")
 }
 
