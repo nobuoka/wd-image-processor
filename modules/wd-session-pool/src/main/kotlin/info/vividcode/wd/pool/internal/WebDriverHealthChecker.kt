@@ -1,6 +1,7 @@
 package info.vividcode.wd.pool.internal
 
 import info.vividcode.wd.*
+import javax.json.JsonString
 
 internal object WebDriverHealthChecker {
 
@@ -8,7 +9,7 @@ internal object WebDriverHealthChecker {
         with (webDriverCommandExecutor) {
             WebDriverCommand.Go(session, htmlDataUrl).execute()
             val rawExecuteResult = WebDriverCommand.ExecuteAsyncScript(session, Script(js, listOf())).execute()
-            (rawExecuteResult as? ScriptResult.String)?.value == "Health check"
+            (rawExecuteResult as? JsonString)?.string == "Health check"
         }
 
     private val htmlDataUrl = createHtmlDataUrl(

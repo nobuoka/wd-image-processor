@@ -1,7 +1,6 @@
 package info.vividcode.wd.http
 
 import info.vividcode.wd.Script
-import info.vividcode.wd.ScriptResult
 import javax.json.*
 
 internal object ExecuteAsyncScriptCommandContentConverter {
@@ -46,17 +45,7 @@ internal object ExecuteAsyncScriptCommandContentConverter {
                     )
                 }
                 when (resultArray[0]) {
-                    JsonValue.TRUE -> resultArray[1].let { successResultValue ->
-                        when (successResultValue.valueType!!) {
-                            JsonValue.ValueType.NUMBER -> ScriptResult.Number((successResultValue as JsonNumber).bigDecimalValue())
-                            JsonValue.ValueType.STRING -> ScriptResult.String((successResultValue as JsonString).string)
-                            JsonValue.ValueType.OBJECT -> ScriptResult.Object(successResultValue as JsonObject)
-                            JsonValue.ValueType.ARRAY -> ScriptResult.Array(successResultValue as JsonArray)
-                            JsonValue.ValueType.TRUE -> ScriptResult.Boolean(true)
-                            JsonValue.ValueType.FALSE -> ScriptResult.Boolean(false)
-                            JsonValue.ValueType.NULL -> ScriptResult.Null
-                        }.let(JavaScriptResult::Success)
-                    }
+                    JsonValue.TRUE -> JavaScriptResult.Success(resultArray[1])
                     JsonValue.FALSE -> {
                         when (val errorMessageValue = resultArray[1]) {
                             is JsonString -> JavaScriptResult.Error(errorMessageValue.string)
@@ -78,7 +67,7 @@ internal object ExecuteAsyncScriptCommandContentConverter {
     class UnexpectedResponseContentException(message: String) : RuntimeException(message)
 
     sealed class JavaScriptResult {
-        data class Success(val value: ScriptResult) : JavaScriptResult()
+        data class Success(val value: JsonValue) : JavaScriptResult()
         data class Error(val message: String) : JavaScriptResult()
     }
 
