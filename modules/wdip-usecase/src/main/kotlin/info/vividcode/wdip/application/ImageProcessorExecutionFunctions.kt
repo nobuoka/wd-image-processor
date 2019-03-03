@@ -1,9 +1,6 @@
 package info.vividcode.wdip.application
 
 import info.vividcode.wd.*
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import javax.json.JsonNumber
 import javax.json.JsonObject
 
 fun WebDriverCommandExecutor.executeImageProcessorWithElementScreenshot(
@@ -36,34 +33,3 @@ fun WebDriverCommandExecutor.executeImageProcessorWithElementScreenshot(
 
     return WdImageProcessingResult(executeResult.statusCode, content, executeResult.httpCache)
 }
-
-fun WebDriverCommandExecutor.executeImageProcessorWithCroppedScreenshot(
-        session: WebDriverSession, htmlString: String, jsString: String, jsArg: String
-): ByteArray {
-    WebDriverCommand.Go(session, createHtmlDataUrl(htmlString)).execute()
-    val rawExecuteResult = WebDriverCommand.ExecuteAsyncScript(session,
-            Script(jsString, listOf(jsArg))
-    ).execute()
-    println("Execute result: $rawExecuteResult")
-//            WebDriverCommand.SetWindowRect(session, Rect(10, 10)).execute()
-
-    val executeResult = ImageProcessorScriptResponse.parseScriptResponse((rawExecuteResult as? ScriptResult.Object)?.value)
-
-    // TODO : 要素のサイズ取得やスクロール処理をする。
-    val screenshotRect = parseScreenshotRect(
-            (executeResult as? ScriptResult.Object)?.value?.get("screenshotRect") as? JsonObject,
-            screenshotRectDefaultValue
-    )
-    val screenshotImage = WebDriverCommand.TakeScreenshot(session).execute()
-    return cropImage(ByteArrayInputStream(screenshotImage), screenshotRect, ByteArrayOutputStream()).toByteArray()
-}
-
-private val screenshotRectDefaultValue = ScreenshotRect(0, 0, 360, 360)
-
-private fun parseScreenshotRect(obj: JsonObject?, defaultValue: ScreenshotRect) =
-        ScreenshotRect(
-                x = ((obj?.get("x") as? JsonNumber)?.intValue() ?: defaultValue.x),
-                y = ((obj?.get("y") as? JsonNumber)?.intValue() ?: defaultValue.y),
-                width = ((obj?.get("width") as? JsonNumber)?.intValue() ?: defaultValue.width),
-                height = ((obj?.get("height") as? JsonNumber)?.intValue() ?: defaultValue.height)
-        )
