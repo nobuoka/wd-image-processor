@@ -4,8 +4,6 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.InputStream
-import java.io.OutputStream
 import javax.imageio.ImageIO
 
 /**
@@ -22,11 +20,3 @@ fun convertImageToJpeg(image: ByteArray): ByteArray {
     ImageIO.write(rendered, "jpeg", output)
     return output.toByteArray()
 }
-
-fun <T : OutputStream> cropImage(imageInputStream: InputStream, screenshotRect: ScreenshotRect, imageOutputStream: T): T =
-    imageOutputStream.also {
-        val originalImage = ImageIO.read(imageInputStream)
-        val croppedImage = originalImage.getSubimage(screenshotRect.x, screenshotRect.y, screenshotRect.width, screenshotRect.height)
-        val ok = ImageIO.write(croppedImage, "png", it)
-        if (!ok) throw RuntimeException("No appropriate writer is found for ImageIO")
-    }
