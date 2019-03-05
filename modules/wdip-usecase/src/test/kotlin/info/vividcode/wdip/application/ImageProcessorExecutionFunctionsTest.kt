@@ -24,14 +24,7 @@ internal class ImageProcessorExecutionFunctionsTest {
     private val webDriverRemoteEndArranger = WebDriverRemoteEndArranger(mockWebServerResourceExtension.mockWebServer)
 
     @Test
-    internal fun executeImageProcessorWithElementScreenshot() {
-        val baseUrl = mockWebServerResourceExtension.mockWebServerUrl
-        val timeouts = Timeouts(2000, 2000, 2000)
-        val webDriverConnectionManager = WebDriverConnectionManager(
-                OkHttpWebDriverCommandHttpRequestDispatcher.Factory(OkHttpClient()),
-                setOf(baseUrl), 1, timeouts
-        )
-
+    internal fun executeImageProcessorWithElementScreenshot_scriptReturnsEmptyObject() {
         val testScreenshotByteArray = javaClass.getResourceAsStream(testPngImageResourcePath).use { it.readBytes() }
 
         val arrange = GlobalScope.async {
@@ -49,14 +42,7 @@ internal class ImageProcessorExecutionFunctionsTest {
         }
 
         val act = GlobalScope.async {
-            webDriverConnectionManager.withSession { session ->
-                executeImageProcessorWithElementScreenshot(
-                        session,
-                        "<!DOCTYPE html><html><head><title>test</title></head><body></body></html>",
-                        "return {};",
-                        ""
-                )
-            }
+            act("<!DOCTYPE html><html><head><title>test</title></head><body></body></html>", "return {};", "")
         }
 
         val result = runBlocking {
@@ -67,6 +53,51 @@ internal class ImageProcessorExecutionFunctionsTest {
         Assertions.assertEquals(200, result.statusCode)
         Assertions.assertNull(result.httpCache)
         Assertions.assertEquals(WdImageProcessingResultContent.createPng(testScreenshotByteArray), result.content)
+    }
+
+    @Test
+    internal fun executeImageProcessorWithElementScreenshot_scriptReturnsArray() {
+        val testScreenshotByteArray = javaClass.getResourceAsStream(testPngImageResourcePath).use { it.readBytes() }
+
+        val arrange = GlobalScope.async {
+            val testSessionId = UUID.fromString("552c06c2-bfc7-43c3-b7dd-9eda5c05a771")
+            val testWebElementReference = UUID.fromString("98c76e56-6077-47ae-ba9a-effd392ce780")
+            webDriverRemoteEndArranger.expectNewSessionCommand(testSessionId)
+            webDriverRemoteEndArranger.expectSetTimeoutsCommand(testSessionId)
+            webDriverRemoteEndArranger.expectGoCommand(testSessionId)
+            webDriverRemoteEndArranger.expectExecuteAsyncScriptCommand(testSessionId, JsonValue.EMPTY_JSON_ARRAY)
+            webDriverRemoteEndArranger.expectFindElement(testSessionId, testWebElementReference)
+            webDriverRemoteEndArranger.expectTakeElementScreenshot(
+                    testSessionId, testWebElementReference, testScreenshotByteArray
+            )
+            webDriverRemoteEndArranger.expectDeleteSessionCommand(testSessionId)
+        }
+
+        val act = GlobalScope.async {
+            act("<!DOCTYPE html><html><head><title>test</title></head><body></body></html>", "return {};", "")
+        }
+
+        val result = runBlocking {
+            arrange.await()
+            act.await()
+        }
+
+        Assertions.assertEquals(200, result.statusCode)
+        Assertions.assertNull(result.httpCache)
+        Assertions.assertEquals(WdImageProcessingResultContent.createPng(testScreenshotByteArray), result.content)
+    }
+
+    private suspend fun act(htmlString: String, jsString: String, jsArg: String): WdImageProcessingResult {
+        val baseUrl = mockWebServerResourceExtension.mockWebServerUrl
+        val timeouts = Timeouts(2000, 2000, 2000)
+        val webDriverConnectionManager = WebDriverConnectionManager(
+                OkHttpWebDriverCommandHttpRequestDispatcher.Factory(OkHttpClient()),
+                setOf(baseUrl), 1, timeouts
+        )
+
+        return webDriverConnectionManager.withSession { session ->
+            executeImageProcessorWithElementScreenshot(session, htmlString, jsString, jsArg)
+        }
     }
 
     companion object {
