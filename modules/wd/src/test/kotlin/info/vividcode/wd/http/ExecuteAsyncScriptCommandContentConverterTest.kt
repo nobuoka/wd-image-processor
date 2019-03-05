@@ -1,13 +1,13 @@
 package info.vividcode.wd.http
 
 import info.vividcode.wd.Script
-import info.vividcode.wd.ScriptResult
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigInteger
 import javax.json.Json
+import javax.json.JsonValue
 
 internal class ExecuteAsyncScriptCommandContentConverterTest {
 
@@ -42,49 +42,49 @@ internal class ExecuteAsyncScriptCommandContentConverterTest {
         fun parseResponseJson_success_boolean() {
             val testValue = Json.createObjectBuilder(mapOf("value" to listOf(true, true))).build()
             val result = ExecuteAsyncScriptCommandContentConverter.parseResponseJson(testValue)
-            Assertions.assertEquals(successResult(ScriptResult.Boolean(true)), result)
+            Assertions.assertEquals(successResult(JsonValue.TRUE), result)
         }
 
         @Test
         fun parseResponseJson_success_string() {
             val testValue = Json.createObjectBuilder(mapOf("value" to listOf(true, "Test"))).build()
             val result = ExecuteAsyncScriptCommandContentConverter.parseResponseJson(testValue)
-            Assertions.assertEquals(successResult(ScriptResult.String("Test")), result)
+            Assertions.assertEquals(successResult(Json.createValue("Test")), result)
         }
 
         @Test
         fun parseResponseJson_success_int() {
             val testValue = Json.createObjectBuilder(mapOf("value" to listOf(true, 1))).build()
             val result = ExecuteAsyncScriptCommandContentConverter.parseResponseJson(testValue)
-            Assertions.assertEquals(successResult(ScriptResult.Number(BigDecimal("1"))), result)
+            Assertions.assertEquals(successResult(Json.createValue(BigDecimal("1"))), result)
         }
 
         @Test
         fun parseResponseJson_success_long() {
             val testValue = Json.createObjectBuilder(mapOf("value" to listOf(true, 0x100000000L))).build()
             val result = ExecuteAsyncScriptCommandContentConverter.parseResponseJson(testValue)
-            Assertions.assertEquals(successResult(ScriptResult.Number(BigDecimal("4294967296"))), result)
+            Assertions.assertEquals(successResult(Json.createValue(BigDecimal("4294967296"))), result)
         }
 
         @Test
         fun parseResponseJson_success_bigDecimal() {
             val testValue = Json.createObjectBuilder(mapOf("value" to listOf(true, BigInteger("100000000000000000000")))).build()
             val result = ExecuteAsyncScriptCommandContentConverter.parseResponseJson(testValue)
-            Assertions.assertEquals(successResult(ScriptResult.Number(BigDecimal("100000000000000000000"))), result)
+            Assertions.assertEquals(successResult(Json.createValue(BigDecimal("100000000000000000000"))), result)
         }
 
         @Test
         fun parseResponseJson_success_double() {
             val testValue = Json.createObjectBuilder(mapOf("value" to listOf(true, 0.5))).build()
             val result = ExecuteAsyncScriptCommandContentConverter.parseResponseJson(testValue)
-            Assertions.assertEquals(successResult(ScriptResult.Number(BigDecimal("0.5"))), result)
+            Assertions.assertEquals(successResult(Json.createValue(BigDecimal("0.5"))), result)
         }
 
         @Test
         fun parseResponseJson_success_array() {
             val testValue = Json.createObjectBuilder(mapOf("value" to listOf(true, listOf(1, 2)))).build()
             val result = ExecuteAsyncScriptCommandContentConverter.parseResponseJson(testValue)
-            val expected = successResult(ScriptResult.Array(Json.createArrayBuilder(listOf(1, 2)).build()))
+            val expected = successResult(Json.createArrayBuilder(listOf(1, 2)).build())
             Assertions.assertEquals(expected, result)
         }
 
@@ -92,7 +92,7 @@ internal class ExecuteAsyncScriptCommandContentConverterTest {
         fun parseResponseJson_success_object() {
             val testValue = Json.createObjectBuilder(mapOf("value" to listOf(true, mapOf("key1" to 1, "key2" to 2)))).build()
             val result = ExecuteAsyncScriptCommandContentConverter.parseResponseJson(testValue)
-            val expected = successResult(ScriptResult.Object(Json.createObjectBuilder(mapOf("key1" to 1, "key2" to 2)).build()))
+            val expected = successResult(Json.createObjectBuilder(mapOf("key1" to 1, "key2" to 2)).build())
             Assertions.assertEquals(expected, result)
         }
 
@@ -100,7 +100,7 @@ internal class ExecuteAsyncScriptCommandContentConverterTest {
         fun parseResponseJson_success_null() {
             val testValue = Json.createObjectBuilder(mapOf("value" to listOf(true, null))).build()
             val result = ExecuteAsyncScriptCommandContentConverter.parseResponseJson(testValue)
-            Assertions.assertEquals(successResult(ScriptResult.Null), result)
+            Assertions.assertEquals(successResult(JsonValue.NULL), result)
         }
 
         @Test
@@ -185,7 +185,7 @@ internal class ExecuteAsyncScriptCommandContentConverterTest {
     }
 
     companion object {
-        fun successResult(value: ScriptResult) = ExecuteAsyncScriptCommandContentConverter.JavaScriptResult.Success(value)
+        fun successResult(value: JsonValue) = ExecuteAsyncScriptCommandContentConverter.JavaScriptResult.Success(value)
 
         private const val script = """
                     var code = new Function(arguments[0]);

@@ -11,7 +11,7 @@ fun WebDriverCommandExecutor.executeImageProcessorWithElementScreenshot(
             Script(jsString, listOf(jsArg))
     ).execute()
 
-    val executeResult = ImageProcessorScriptResponse.parseScriptResponse((rawExecuteResult as? ScriptResult.Object)?.value)
+    val executeResult = ImageProcessorScriptResponse.parseScriptResponse((rawExecuteResult as? JsonObject))
 
     val content: WdImageProcessingResultContent? = when (executeResult.content) {
         is Content.Screenshot -> {

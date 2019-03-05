@@ -8,6 +8,7 @@ import org.hamcrest.MatcherAssert
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.json.Json
+import javax.json.JsonObject
 import javax.json.JsonValue
 
 class WebDriverRemoteEndArranger(private val server: MockWebServer) {
@@ -44,12 +45,29 @@ class WebDriverRemoteEndArranger(private val server: MockWebServer) {
         server.enqueue(createResponse(200, createDeleteSessionCommandResponseJson()))
     }
 
+    fun expectFindElement(testSessionId: UUID, webElementReference: UUID) {
+        val request = requireNotNull(server.takeRequest(1000, TimeUnit.MILLISECONDS))
+        MatcherAssert.assertThat(request.method, CoreMatchers.equalTo("POST"))
+        MatcherAssert.assertThat(request.path, CoreMatchers.equalTo("/session/$testSessionId/element"))
+
+        server.enqueue(createResponse(200, createJsonSerializationElement(webElementReference)))
+    }
+
     fun expectExecuteAsyncScriptCommand(testSessionId: UUID, scriptResultValue: JsonValue) {
         val request = requireNotNull(server.takeRequest(1000, TimeUnit.MILLISECONDS))
         MatcherAssert.assertThat(request.method, CoreMatchers.equalTo("POST"))
         MatcherAssert.assertThat(request.path, CoreMatchers.equalTo("/session/$testSessionId/execute/async"))
 
         server.enqueue(createResponse(200, Json.createArrayBuilder().add(true).add(scriptResultValue).build()))
+    }
+
+    fun expectTakeElementScreenshot(testSessionId: UUID, expectedElementId: UUID, testScreenshotBytes: ByteArray) {
+        val request = requireNotNull(server.takeRequest(1000, TimeUnit.MILLISECONDS))
+        MatcherAssert.assertThat(request.method, CoreMatchers.equalTo("GET"))
+        MatcherAssert.assertThat(request.path,
+                CoreMatchers.equalTo("/session/$testSessionId/element/$expectedElementId/screenshot"))
+
+        server.enqueue(createResponse(200, Json.createValue(Base64.getEncoder().encodeToString(testScreenshotBytes))))
     }
 
     /**
@@ -83,6 +101,9 @@ class WebDriverRemoteEndArranger(private val server: MockWebServer) {
      * [Delete Session command](https://www.w3.org/TR/webdriver/#dfn-delete-session).
      */
     private fun createDeleteSessionCommandResponseJson(): JsonValue = JsonValue.NULL
+
+    private fun createJsonSerializationElement(webElementReference: UUID): JsonObject =
+            Json.createObjectBuilder(mapOf("element-6066-11e4-a52e-4f735466cecf" to webElementReference.toString())).build()
 
     /**
      * [New Session command](https://www.w3.org/TR/webdriver/#new-session).

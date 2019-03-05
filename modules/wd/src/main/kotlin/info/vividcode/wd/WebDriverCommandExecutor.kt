@@ -1,5 +1,7 @@
 package info.vividcode.wd
 
+import javax.json.JsonValue
+
 interface WebDriverCommandExecutor :
     NewSessionCommandExecutor, DeleteSessionCommandExecutor,
     SetWindowRectExecutor, SetTimeoutsExecutor,
@@ -24,7 +26,7 @@ interface DeleteSessionCommandExecutor {
 interface SetWindowRectExecutor { fun WebDriverCommand.SetWindowRect.execute() }
 interface SetTimeoutsExecutor { fun WebDriverCommand.SetTimeouts.execute() }
 interface GoCommandExecutor { fun WebDriverCommand.Go.execute() }
-interface ExecuteScriptCommandExecutor { fun WebDriverCommand.ExecuteAsyncScript.execute(): ScriptResult }
+interface ExecuteScriptCommandExecutor { fun WebDriverCommand.ExecuteAsyncScript.execute(): JsonValue }
 interface TakeScreenshotCommandExecutor { fun WebDriverCommand.TakeScreenshot.execute(): ByteArray }
 interface TakeElementScreenshotCommandExecutor { fun WebDriverCommand.TakeElementScreenshot.execute(): ByteArray }
 interface FindElementCommandExecutor { fun WebDriverCommand.FindElement.execute(): WebElement }
