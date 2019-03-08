@@ -9,7 +9,11 @@ import info.vividcode.wdip.ktor.WdImageProcessingInterceptor
 import info.vividcode.wdip.ktor.features.OriginAccessControl
 import info.vividcode.wdip.ktor.getAndHead
 import info.vividcode.wdip.ktor.routeGetAndHead
-import io.ktor.application.*
+import info.vividcode.wdip.web.WdImageProcessingEndpoint
+import io.ktor.application.Application
+import io.ktor.application.ApplicationCallPipeline
+import io.ktor.application.call
+import io.ktor.application.install
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.header
 import io.ktor.response.respond
@@ -17,7 +21,6 @@ import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
-import io.ktor.util.pipeline.PipelineInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import java.nio.file.Paths
@@ -140,8 +143,3 @@ internal object Resources {
                 String(inputStream.readBytes(), Charsets.UTF_8)
             }
 }
-
-internal class WdImageProcessingEndpoint(
-    val path: String,
-    val interceptors: List<PipelineInterceptor<Unit, ApplicationCall>>
-)
