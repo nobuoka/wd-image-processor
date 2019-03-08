@@ -24,7 +24,7 @@ import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 
-fun startServer(webDriverBaseUrls: List<String>, processorsConfigJsonPath: String, webDriverSessionCapacity: Int) {
+fun createWebDriverSessionManager(webDriverBaseUrls: List<String>, webDriverSessionCapacity: Int): WebDriverConnectionManager {
     val okHttpClient = OkHttpClient.Builder()
             .addNetworkInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
             // Avoid retrying on 408 error.
@@ -33,11 +33,13 @@ fun startServer(webDriverBaseUrls: List<String>, processorsConfigJsonPath: Strin
             .readTimeout(20, TimeUnit.SECONDS)
             .writeTimeout(20, TimeUnit.SECONDS)
             .build()
-    val wdSessionManager = WebDriverConnectionManager(
+    return WebDriverConnectionManager(
             OkHttpWebDriverCommandHttpRequestDispatcher.Factory(okHttpClient), webDriverBaseUrls,
             webDriverSessionCapacity = webDriverSessionCapacity,
             webDriverTimeouts = Timeouts(18_000, 18_000, 0))
+}
 
+fun startServer(processorsConfigJsonPath: String, wdSessionManager: WebDriverConnectionManager) {
     val config = parseProcessorsConfigJson(Paths.get(processorsConfigJsonPath))
     val wdImageProcessingEndpoints = config.processors.map {
         WdImageProcessingEndpoint(it.path, listOfNotNull(

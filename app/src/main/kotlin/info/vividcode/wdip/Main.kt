@@ -12,13 +12,15 @@ import javax.json.JsonObject
 import javax.json.JsonString
 
 fun main(args: Array<String>) {
-    val spaceSeparatedWebDriverBaseUrls = System.getenv("WD_BASE_URLS") ?: "http://localhost:10001"
-    val webDriverBaseUrls = spaceSeparatedWebDriverBaseUrls.split(Regex("\\s"))
-    val processorsConfigJsonPath = System.getenv("PROCESSORS_CONFIG_PATH") ?: "./sampleProcessors/config.json"
-    // Session of WebDriver will be recreated after requests are received `WD_SESSION_CAPACITY` times
-    val webDriverSessionCapacity = System.getenv("WD_SESSION_CAPACITY")?.toIntOrNull() ?: 10
+    val wdSessionManager = createWebDriverSessionManager(
+            webDriverBaseUrls = (System.getenv("WD_BASE_URLS") ?: "http://localhost:10001").split(Regex("\\s")),
+            // Session of WebDriver will be recreated after requests are received `WD_SESSION_CAPACITY` times
+            webDriverSessionCapacity = System.getenv("WD_SESSION_CAPACITY")?.toIntOrNull() ?: 10
+    )
 
-    startServer(webDriverBaseUrls, processorsConfigJsonPath, webDriverSessionCapacity)
+    val processorsConfigJsonPath = System.getenv("PROCESSORS_CONFIG_PATH") ?: "./sampleProcessors/config.json"
+
+    startServer(processorsConfigJsonPath, wdSessionManager)
 }
 
 data class WdipSetting(
