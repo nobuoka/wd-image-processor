@@ -24,13 +24,7 @@ import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 
-fun startServer() {
-    val spaceSeparatedWebDriverBaseUrls = System.getenv("WD_BASE_URLS") ?: "http://localhost:10001"
-    val webDriverBaseUrls = spaceSeparatedWebDriverBaseUrls.split(Regex("\\s"))
-    val processorsConfigJsonPath = System.getenv("PROCESSORS_CONFIG_PATH") ?: "./sampleProcessors/config.json"
-    // Session of WebDriver will be recreated after requests are received `WD_SESSION_CAPACITY` times
-    val webDriverSessionCapacity = System.getenv("WD_SESSION_CAPACITY")?.toIntOrNull() ?: 10
-
+fun startServer(webDriverBaseUrls: List<String>, processorsConfigJsonPath: String, webDriverSessionCapacity: Int) {
     val okHttpClient = OkHttpClient.Builder()
             .addNetworkInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
             // Avoid retrying on 408 error.
