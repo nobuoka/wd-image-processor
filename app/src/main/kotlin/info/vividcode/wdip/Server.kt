@@ -39,27 +39,33 @@ fun createWebDriverSessionManager(webDriverBaseUrls: List<String>, webDriverSess
             webDriverTimeouts = Timeouts(18_000, 18_000, 0))
 }
 
-fun startServer(processorsConfigJsonPath: String, wdSessionManager: WebDriverConnectionManager) {
-    val config = parseProcessorsConfigJson(Paths.get(processorsConfigJsonPath))
-    val wdImageProcessingEndpoints = config.processors.map {
-        WdImageProcessingEndpoint(it.path, listOfNotNull(
-            it.key?.let(::SignatureVerifyingInterceptor),
-            WdImageProcessingInterceptor(
-                WdImageProcessingExecutor(wdSessionManager),
-                it.html,
-                it.js
-            )
-        ).map { it.toPipelineInterceptor() })
+class WebDriverImageProcessorModule(
+        private val processorsConfigJsonPath: String,
+        private val wdSessionManager: WebDriverConnectionManager
+) : (Application) -> Unit {
+    override fun invoke(application: Application) {
+        val config = parseProcessorsConfigJson(Paths.get(processorsConfigJsonPath))
+        val wdImageProcessingEndpoints = config.processors.map {
+            WdImageProcessingEndpoint(it.path, listOfNotNull(
+                    it.key?.let(::SignatureVerifyingInterceptor),
+                    WdImageProcessingInterceptor(
+                            WdImageProcessingExecutor(wdSessionManager),
+                            it.html,
+                            it.js
+                    )
+            ).map { it.toPipelineInterceptor() })
+        }
+        application.setup(config, wdSessionManager, wdImageProcessingEndpoints)
     }
+}
 
+fun startServer(module: Application.() -> Unit) {
     val serverReference = AtomicReference<NettyApplicationEngine?>(null)
     val shutdownHookThread = Thread(Runnable {
         serverReference.get()?.stop(2000, 15000, TimeUnit.MILLISECONDS)
     })
 
-    val server = embeddedServer(Netty, 8080) {
-        setup(config, wdSessionManager, wdImageProcessingEndpoints)
-    }
+    val server = embeddedServer(Netty, port = 8080, module = module)
 
     serverReference.set(server)
 

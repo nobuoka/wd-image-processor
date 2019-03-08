@@ -20,7 +20,7 @@ fun main(args: Array<String>) {
 
     val processorsConfigJsonPath = System.getenv("PROCESSORS_CONFIG_PATH") ?: "./sampleProcessors/config.json"
 
-    startServer(processorsConfigJsonPath, wdSessionManager)
+    startServer(WebDriverImageProcessorModule(processorsConfigJsonPath, wdSessionManager))
 }
 
 data class WdipSetting(
