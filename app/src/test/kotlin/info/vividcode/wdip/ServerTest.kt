@@ -89,6 +89,14 @@ internal class ServerTest {
     }
 
     @Nested
+    internal inner class CreateWebDriverSessionManager {
+        @Test
+        internal fun normal() {
+            createWebDriverSessionManager(listOf("http://example.com/wd"), 1)
+        }
+    }
+
+    @Nested
     internal inner class ResourcesTest {
         @Test
         internal fun readAsUtf8Text_normal() {
