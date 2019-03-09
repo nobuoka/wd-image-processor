@@ -25,6 +25,7 @@ dependencies {
     implementation(project(":modules:wd-session-pool"))
     implementation(project(":modules:wd-okhttp"))
     implementation(project(":modules:wdip-usecase"))
+    implementation(project(":modules:wdip-web"))
 
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
