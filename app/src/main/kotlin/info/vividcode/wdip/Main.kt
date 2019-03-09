@@ -12,13 +12,12 @@ import javax.json.JsonObject
 import javax.json.JsonString
 
 fun main(args: Array<String>) {
-    val wdSessionManager = createWebDriverSessionManager(
-            webDriverBaseUrls = (System.getenv("WD_BASE_URLS") ?: "http://localhost:10001").split(Regex("\\s")),
-            // Session of WebDriver will be recreated after requests are received `WD_SESSION_CAPACITY` times
-            webDriverSessionCapacity = System.getenv("WD_SESSION_CAPACITY")?.toIntOrNull() ?: 10
-    )
+    val getenv: (String) -> String? = System::getenv
+    val env = ApplicationEnvironmentVariables.load(getenv)
 
-    val processorsConfigJsonPath = System.getenv("PROCESSORS_CONFIG_PATH") ?: "./sampleProcessors/config.json"
+    val wdSessionManager = createWebDriverSessionManager(env.webDriverBaseUrls, env.webDriverSessionCapacity)
+
+    val processorsConfigJsonPath = env.processorsConfigPath
     val config = parseProcessorsConfigJson(Paths.get(processorsConfigJsonPath))
 
     startServer(WebDriverImageProcessorModule(config, wdSessionManager))
