@@ -19,8 +19,9 @@ fun main(args: Array<String>) {
     )
 
     val processorsConfigJsonPath = System.getenv("PROCESSORS_CONFIG_PATH") ?: "./sampleProcessors/config.json"
+    val config = parseProcessorsConfigJson(Paths.get(processorsConfigJsonPath))
 
-    startServer(WebDriverImageProcessorModule(processorsConfigJsonPath, wdSessionManager))
+    startServer(WebDriverImageProcessorModule(config, wdSessionManager))
 }
 
 data class WdipSetting(

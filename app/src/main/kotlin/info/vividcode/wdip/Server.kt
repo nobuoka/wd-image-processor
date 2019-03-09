@@ -23,7 +23,6 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 
@@ -43,11 +42,10 @@ fun createWebDriverSessionManager(webDriverBaseUrls: List<String>, webDriverSess
 }
 
 class WebDriverImageProcessorModule(
-        private val processorsConfigJsonPath: String,
+        private val config: WdipSetting,
         private val wdSessionManager: WebDriverConnectionManager
 ) : (Application) -> Unit {
     override fun invoke(application: Application) {
-        val config = parseProcessorsConfigJson(Paths.get(processorsConfigJsonPath))
         val wdImageProcessingEndpoints = config.processors.map {
             WdImageProcessingEndpoint(it.path, listOfNotNull(
                     it.key?.let(::SignatureVerifyingInterceptor),
