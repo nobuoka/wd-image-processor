@@ -2,6 +2,7 @@
 
 package info.vividcode.wdip
 
+import java.io.StringReader
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
@@ -12,7 +13,18 @@ import javax.json.JsonObject
 import javax.json.JsonString
 
 fun main(args: Array<String>) {
-    startServer()
+    val module = createWebDriverImageProcessorModule(getenv = System::getenv, readFile = Files::readAllBytes)
+    startServer(module)
+}
+
+fun createWebDriverImageProcessorModule(
+        getenv: (name: String) -> String?,
+        readFile: (configPath: Path) -> ByteArray
+): WebDriverImageProcessorModule {
+    val env = ApplicationEnvironmentVariables.load(getenv)
+    val wdSessionManager = createWebDriverSessionManager(env.webDriverBaseUrls, env.webDriverSessionCapacity)
+    val config = parseProcessorsConfigJson(Paths.get(env.processorsConfigPath), readFile)
+    return WebDriverImageProcessorModule(config, wdSessionManager)
 }
 
 data class WdipSetting(
@@ -21,10 +33,11 @@ data class WdipSetting(
 )
 data class ProcessorSetting(val path: String, val html: String, val js: String, val key: String?)
 
-fun parseProcessorsConfigJson(jsonFile: Path): WdipSetting {
-    fun Path.readContent(): String = Files.readAllBytes(jsonFile.parent.resolve(this)).toString(StandardCharsets.UTF_8)
+fun parseProcessorsConfigJson(jsonFile: Path, readFile: (configPath: Path) -> ByteArray): WdipSetting {
+    fun Path.readContent(): String = readFile(jsonFile.parent.resolve(this)).toString(StandardCharsets.UTF_8)
 
-    val configObject = jsonFile.toFile().reader().use { Json.createReader(it).readObject() }
+    val configObject = StringReader(String(readFile(jsonFile), Charsets.UTF_8))
+            .use { reader -> Json.createReader(reader).readObject() }
     return WdipSetting(
         accessControlAllowOrigins =
         (configObject["accessControlAllowOrigins"] as JsonArray?)?.map { (it as JsonString).string }?.toSet() ?: emptySet(),
