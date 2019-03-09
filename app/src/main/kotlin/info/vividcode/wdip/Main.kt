@@ -12,15 +12,17 @@ import javax.json.JsonObject
 import javax.json.JsonString
 
 fun main(args: Array<String>) {
-    val getenv: (String) -> String? = System::getenv
+    val module = createWebDriverImageProcessorModule(getenv = System::getenv)
+    startServer(module)
+}
+
+fun createWebDriverImageProcessorModule(
+        getenv: (name: String) -> String?
+): WebDriverImageProcessorModule {
     val env = ApplicationEnvironmentVariables.load(getenv)
-
     val wdSessionManager = createWebDriverSessionManager(env.webDriverBaseUrls, env.webDriverSessionCapacity)
-
-    val processorsConfigJsonPath = env.processorsConfigPath
-    val config = parseProcessorsConfigJson(Paths.get(processorsConfigJsonPath))
-
-    startServer(WebDriverImageProcessorModule(config, wdSessionManager))
+    val config = parseProcessorsConfigJson(Paths.get(env.processorsConfigPath))
+    return WebDriverImageProcessorModule(config, wdSessionManager)
 }
 
 data class WdipSetting(
