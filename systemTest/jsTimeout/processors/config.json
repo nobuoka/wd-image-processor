@@ -1,0 +1,9 @@
+{
+  "accessControlAllowOrigins": [],
+  "processors": {
+    "no-response": {
+      "html": "./noResponse/main.html",
+      "js": "./noResponse/main.js"
+    }
+  }
+}

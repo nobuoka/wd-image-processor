@@ -1,0 +1,8 @@
+[package]
+
+name = "js-timeout-test"
+version = "0.0.1"
+authors = [ "Nobuoka Yu <nobuoka@vividcode.info>" ]
+
+[dependencies]
+reqwest = "*"
