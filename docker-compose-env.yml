@@ -1,0 +1,10 @@
+version: "3"
+services:
+  wd-server-fx1:
+    image: quay.io/wakaba/firefoxdriver:stable
+    ports:
+      - 10001:9516
+  wd-server-fx2:
+    image: quay.io/wakaba/firefoxdriver:stable
+    ports:
+      - 10002:9516

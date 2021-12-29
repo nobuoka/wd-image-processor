@@ -3,6 +3,7 @@ package info.vividcode.wdip
 import info.vividcode.wd.Timeouts
 import info.vividcode.wd.http.implementation.OkHttpWebDriverCommandHttpRequestDispatcher
 import info.vividcode.wd.pool.WebDriverConnectionManager
+import info.vividcode.wdip.web.WdipSetting
 import io.ktor.http.Headers
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
@@ -21,7 +22,7 @@ internal class ServerTest {
                 OkHttpWebDriverCommandHttpRequestDispatcher.Factory(OkHttpClient()), listOf("http://test.com/wd"),
                 1, Timeouts(1, 1, 1)
         )
-        application.setup(config, wdSessionManager, emptyList())
+        application.setup(config, wdSessionManager, emptyList(), "test-revision")
 
         test()
     }

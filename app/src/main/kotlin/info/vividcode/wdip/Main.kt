@@ -2,6 +2,8 @@
 
 package info.vividcode.wdip
 
+import info.vividcode.wdip.web.ProcessorSetting
+import info.vividcode.wdip.web.WdipSetting
 import java.io.StringReader
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -13,25 +15,24 @@ import javax.json.JsonObject
 import javax.json.JsonString
 
 fun main(args: Array<String>) {
-    val module = createWebDriverImageProcessorModule(getenv = System::getenv, readFile = Files::readAllBytes)
+    val module = createWebDriverImageProcessorModule(
+            getenv = System::getenv,
+            readFile = Files::readAllBytes,
+            applicationRevision = Resources.readAsUtf8Text("/wdip-git-revision")
+    )
     startServer(module)
 }
 
 fun createWebDriverImageProcessorModule(
         getenv: (name: String) -> String?,
-        readFile: (configPath: Path) -> ByteArray
+        readFile: (configPath: Path) -> ByteArray,
+        applicationRevision: String?
 ): WebDriverImageProcessorModule {
     val env = ApplicationEnvironmentVariables.load(getenv)
     val wdSessionManager = createWebDriverSessionManager(env.webDriverBaseUrls, env.webDriverSessionCapacity)
     val config = parseProcessorsConfigJson(Paths.get(env.processorsConfigPath), readFile)
-    return WebDriverImageProcessorModule(config, wdSessionManager)
+    return WebDriverImageProcessorModule(config, wdSessionManager, applicationRevision)
 }
-
-data class WdipSetting(
-    val accessControlAllowOrigins: Set<String>,
-    val processors: List<ProcessorSetting>
-)
-data class ProcessorSetting(val path: String, val html: String, val js: String, val key: String?)
 
 fun parseProcessorsConfigJson(jsonFile: Path, readFile: (configPath: Path) -> ByteArray): WdipSetting {
     fun Path.readContent(): String = readFile(jsonFile.parent.resolve(this)).toString(StandardCharsets.UTF_8)
@@ -39,15 +40,16 @@ fun parseProcessorsConfigJson(jsonFile: Path, readFile: (configPath: Path) -> By
     val configObject = StringReader(String(readFile(jsonFile), Charsets.UTF_8))
             .use { reader -> Json.createReader(reader).readObject() }
     return WdipSetting(
-        accessControlAllowOrigins =
-        (configObject["accessControlAllowOrigins"] as JsonArray?)?.map { (it as JsonString).string }?.toSet() ?: emptySet(),
-        processors =
-        (configObject["processors"] as JsonObject?)?.let {
-            it.entries.map { (path, config) ->
-                val htmlString = (config as? JsonObject)?.getJsonString("html")?.let { Paths.get(it.string).readContent() }
-                val jsString = (config as? JsonObject)?.getJsonString("js")?.let { Paths.get(it.string).readContent() }
-                val key = (config as? JsonObject)?.getJsonString("key")?.string
-                ProcessorSetting(path, htmlString ?: "", jsString ?: "", key)
-            }
-        } ?: emptyList())
+            accessControlAllowOrigins =
+            (configObject["accessControlAllowOrigins"] as JsonArray?)?.map { (it as JsonString).string }?.toSet()
+                    ?: emptySet(),
+            processors =
+            (configObject["processors"] as JsonObject?)?.let {
+                it.entries.map { (path, config) ->
+                    val htmlString = (config as? JsonObject)?.getJsonString("html")?.let { Paths.get(it.string).readContent() }
+                    val jsString = (config as? JsonObject)?.getJsonString("js")?.let { Paths.get(it.string).readContent() }
+                    val key = (config as? JsonObject)?.getJsonString("key")?.string
+                    ProcessorSetting(path, htmlString ?: "", jsString ?: "", key)
+                }
+            } ?: emptyList())
 }

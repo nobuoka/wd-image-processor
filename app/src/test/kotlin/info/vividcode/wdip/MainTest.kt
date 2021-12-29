@@ -1,5 +1,7 @@
 package info.vividcode.wdip
 
+import info.vividcode.wdip.web.ProcessorSetting
+import info.vividcode.wdip.web.WdipSetting
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Nested

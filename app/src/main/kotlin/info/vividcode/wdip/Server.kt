@@ -10,6 +10,7 @@ import info.vividcode.wdip.ktor.features.OriginAccessControl
 import info.vividcode.wdip.ktor.getAndHead
 import info.vividcode.wdip.ktor.routeGetAndHead
 import info.vividcode.wdip.web.WdImageProcessingEndpoint
+import info.vividcode.wdip.web.WdipSetting
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
@@ -43,7 +44,8 @@ fun createWebDriverSessionManager(webDriverBaseUrls: List<String>, webDriverSess
 
 class WebDriverImageProcessorModule(
         private val config: WdipSetting,
-        private val wdSessionManager: WebDriverConnectionManager
+        private val wdSessionManager: WebDriverConnectionManager,
+        private val applicationRevision: String?
 ) : (Application) -> Unit {
     override fun invoke(application: Application) {
         val wdImageProcessingEndpoints = config.processors.map {
@@ -56,7 +58,7 @@ class WebDriverImageProcessorModule(
                     )
             ).map { it.toPipelineInterceptor() })
         }
-        application.setup(config, wdSessionManager, wdImageProcessingEndpoints)
+        application.setup(config, wdSessionManager, wdImageProcessingEndpoints, applicationRevision)
     }
 }
 
@@ -74,10 +76,11 @@ fun startServer(module: Application.() -> Unit) {
     server.start(wait = true)
 }
 
-internal fun Application.setup(
+fun Application.setup(
         config: WdipSetting,
         wdSessionManager: WebDriverConnectionManager,
-        wdImageProcessingEndpoints: List<WdImageProcessingEndpoint>
+        wdImageProcessingEndpoints: List<WdImageProcessingEndpoint>,
+        applicationRevision: String?
 ) {
     intercept(ApplicationCallPipeline.Call) {
         try {
@@ -97,6 +100,7 @@ internal fun Application.setup(
     }
 
     routing {
+
         getAndHead("/-/health/app-only") {
             call.respond("OK")
         }
@@ -121,10 +125,9 @@ internal fun Application.setup(
             }
         }
 
-        val gitRevision = Resources.readAsUtf8Text("/wdip-git-revision")
         getAndHead("/-/system-info") {
-            if (gitRevision != null) {
-                call.response.header("X-Rev", gitRevision)
+            if (applicationRevision != null) {
+                call.response.header("X-Rev", applicationRevision)
             }
             call.respond("")
         }

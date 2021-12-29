@@ -3,6 +3,8 @@ package info.vividcode.wdip
 import info.vividcode.wd.Timeouts
 import info.vividcode.wd.http.implementation.OkHttpWebDriverCommandHttpRequestDispatcher
 import info.vividcode.wd.pool.WebDriverConnectionManager
+import info.vividcode.wdip.web.ProcessorSetting
+import info.vividcode.wdip.web.WdipSetting
 import io.ktor.http.Headers
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.withTestApplication
